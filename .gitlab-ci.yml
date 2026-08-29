@@ -39,7 +39,10 @@ release-to-github:
     - git config user.email "gitlab-mirror@noreply.invalid"
     - git add README.md
     - git commit -m "Update GitHub mirror README"
-    - git push github "HEAD:refs/heads/main" "refs/tags/${CI_COMMIT_TAG}:refs/tags/${CI_COMMIT_TAG}"
+    # GitHub main may contain the mirror-only README commit. The main branch
+    # is synchronized by mirror-main-to-github; release tags are pushed
+    # independently so they do not require a fast-forward main update.
+    - git push github "refs/tags/${CI_COMMIT_TAG}:refs/tags/${CI_COMMIT_TAG}"
     - >-
       curl --fail --request POST
       --header "Authorization: Bearer ${GITHUB_TOKEN}"

@@ -2,6 +2,10 @@
 
 All notable changes will be documented here.
 
+## 2026.08.3 - Alpha
+
+- Reissued the combined local/cloud source release after fixing GitHub mirror tag publishing.
+
 ## 2026.08.2 - Alpha
 
 - Combine local and cloud sources for the same device using its device ID.
