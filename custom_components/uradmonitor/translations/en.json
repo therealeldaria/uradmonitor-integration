@@ -19,7 +19,8 @@
           "port": "The local API normally uses port 80. Change this only if your device uses another port."
         },
         "error": {
-          "cannot_connect": "Unable to connect to the local device. Check the host and port."
+          "cannot_connect": "Unable to connect to the local device. Check the host and port.",
+          "invalid_response": "The local device did not return a valid device ID."
         }
       },
       "cloud": {

@@ -67,13 +67,21 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except UradmonitorApiError:
                 errors["base"] = "cannot_connect"
             else:
-                if device_id := local_data.get("id"):
-                    await self.async_set_unique_id(str(device_id))
+                device_id = local_data.get("id")
+                if not device_id:
+                    errors["base"] = "invalid_response"
+                else:
+                    device_id = str(device_id)
+                    await self.async_set_unique_id(device_id)
                     self._abort_if_unique_id_configured()
-                return self.async_create_entry(
-                    title=user_input[CONF_HOST],
-                    data={**user_input, CONF_ACCESS_MODE: ACCESS_MODE_LOCAL},
-                )
+                    return self.async_create_entry(
+                        title=user_input[CONF_HOST],
+                        data={
+                            **user_input,
+                            CONF_ACCESS_MODE: ACCESS_MODE_LOCAL,
+                            CONF_DEVICE_ID: device_id,
+                        },
+                    )
 
         return self.async_show_form(
             step_id="local",

@@ -14,7 +14,7 @@ This project is a Python Home Assistant custom integration for uradmonitor envir
 - Retry and availability handling when a device or service is temporarily unavailable.
 - Optional local discovery when the protocol is confirmed.
 
-The local API uses the device's embedded web server and JSON endpoint. The cloud API uses the User ID and User key from the UradMonitor Dashboard and can list the devices available to that account. Exact device models, measurements, and API response details will be added as confirmed during API research.
+The local API uses the device's embedded web server and JSON endpoint. The cloud API uses the User ID and User key from the UradMonitor Dashboard and can list the devices available to that account. The device ID returned by either API is used as the stable Home Assistant identity. Exact device models, measurements, and API response details will be added as confirmed during API research.
 
 Local access requires network access to the device. Cloud access requires an active internet connection. Home Assistant classifies this integration as local polling because it supports direct communication with local devices.
 
