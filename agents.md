@@ -26,6 +26,7 @@ The implementation language is Python. Follow current Home Assistant APIs and as
 - `tests/fixtures/`: sanitized, non-secret API responses.
 - `docs/`: API research, architecture, and HACS notes.
 - `.gitlab-ci.yml`: merge-request and `main` quality gates.
+- `compose.dev.yml` and `.dev/homeassistant/`: isolated manual Home Assistant test instance.
 
 ## Development rules
 
@@ -48,6 +49,8 @@ uv run pytest
 ```
 
 Merge requests must pass Ruff, pytest, JSON/manifest validation, and Home Assistant checks in GitLab CI. The default branch is `main`.
+
+Manual Home Assistant testing uses the Podman instance described in `docs/development-homeassistant.md`. It uses host networking and port `8123`; never use the production Home Assistant configuration for development.
 
 ## Release and hosting
 

@@ -1,0 +1,11 @@
+services:
+  homeassistant:
+    container_name: uradmonitor-homeassistant-dev
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Europe/Stockholm
+    volumes:
+      - ./.dev/homeassistant:/config:Z
+      - ./custom_components/uradmonitor:/config/custom_components/uradmonitor:Z

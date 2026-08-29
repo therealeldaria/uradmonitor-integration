@@ -1,0 +1,11 @@
+default_config:
+
+homeassistant:
+  name: uradmonitor development
+  unit_system: metric
+  time_zone: Europe/Stockholm
+
+logger:
+  default: info
+  logs:
+    custom_components.uradmonitor: debug
