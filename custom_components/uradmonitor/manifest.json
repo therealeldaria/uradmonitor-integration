@@ -1,0 +1,12 @@
+{
+  "domain": "uradmonitor",
+  "name": "uradmonitor",
+  "version": "2026.08.0",
+  "documentation": "https://gitlab.example.invalid/uradmonitor/uradmonitor-integration",
+  "issue_tracker": "https://gitlab.example.invalid/uradmonitor/uradmonitor-integration/-/issues",
+  "codeowners": ["@REPLACE_WITH_GITLAB_HANDLE"],
+  "config_flow": true,
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "requirements": []
+}
