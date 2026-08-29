@@ -62,42 +62,69 @@ class UradmonitorApiClient:
         self, host: str, port: int = 80
     ) -> dict[str, str]:
         """Fetch hardware and software metadata from the local status page."""
+        return await self._async_get_local_status(host, port, metadata_only=True)
+
+    async def async_get_local_status_data(
+        self, host: str, port: int = 80
+    ) -> dict[str, Any]:
+        """Fetch current readings and metadata from the local status page."""
+        return await self._async_get_local_status(host, port, metadata_only=False)
+
+    async def _async_get_local_status(
+        self, host: str, port: int, *, metadata_only: bool
+    ) -> dict[str, Any]:
+        """Fetch and parse the single-request local status page."""
         url = f"http://{host}:{port}/"
-        _LOGGER.debug("Requesting local device metadata from %s", url)
+        _LOGGER.debug("Requesting local device status from %s", url)
         try:
             page, status = await asyncio.to_thread(
                 self._fetch_local_page, host, port, "/"
             )
-            _LOGGER.debug("Local device metadata returned HTTP status %s", status)
-        except (
-            TimeoutError,
-            OSError,
-            ValueError,
-        ) as err:
+            _LOGGER.debug("Local device status returned HTTP status %s", status)
+        except (TimeoutError, OSError, ValueError) as err:
             _LOGGER.warning(
-                "Local device metadata request failed for %s:%s: %s", host, port, err
+                "Local device status request failed for %s:%s: %s", host, port, err
             )
-            raise UradmonitorApiError("Unable to fetch local device metadata") from err
+            raise UradmonitorApiError("Unable to fetch local device status") from err
+
         id_match = re.search(r"<b>uRADMonitor\s+(?P<id>[^<\s]+)</b>", page)
-        match = re.search(
+        metadata_match = re.search(
             r"type:(?P<type>\S+)\s+hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+(?P<detector>[^<\s]+)",
             page,
         )
-        if not match:
-            _LOGGER.debug("Local device metadata page did not contain known metadata")
-            return {}
         metadata = {
             "device_id": id_match.group("id") if id_match else None,
-            "device_type": match.group("type"),
-            "hardware_version": match.group("hw"),
-            "software_version": match.group("sw"),
-            "detector": match.group("detector"),
+            "device_type": metadata_match.group("type") if metadata_match else None,
+            "hardware_version": metadata_match.group("hw") if metadata_match else None,
+            "software_version": metadata_match.group("sw") if metadata_match else None,
+            "detector": metadata_match.group("detector") if metadata_match else None,
         }
         metadata = {key: value for key, value in metadata.items() if value is not None}
-        _LOGGER.debug(
-            "Local device metadata received with fields: %s", sorted(metadata)
-        )
-        return metadata
+        if metadata_only:
+            _LOGGER.debug(
+                "Local device metadata received with fields: %s", sorted(metadata)
+            )
+            return metadata
+
+        values = {}
+        for key, pattern in {
+            "cpm": r"radiation:(?P<value>[\d.]+)CPM",
+            "temperature": r"temperature:(?P<value>[\d.]+)C",
+            "pressure": r"pressure:(?P<value>[\d.]+)Pa",
+            "humidity": r"humidty:(?P<value>[\d.]+)RH",
+            "voc": r"VOC:(?P<value>[\d.]+)",
+            "ch2o": r"CH2O:(?P<value>[\d.]+)ppm",
+            "pm25": r"PM2\.5:(?P<value>[\d.]+)ug/m\^3",
+            "co2": r"CO2:(?P<value>[\d.]+)ppm",
+            "voltage": r"voltage:(?P<value>[\d.]+)V",
+            "duty": r"duty:(?P<value>[\d.]+)%",
+            "uptime": r"uptime:(?P<value>[\d.]+)s",
+        }.items():
+            if match := re.search(pattern, page):
+                values[key] = float(match.group("value"))
+        if not metadata.get("device_id") or not values:
+            raise UradmonitorApiError("Local device status did not contain readings")
+        return {**metadata, **values}
 
     @staticmethod
     def _fetch_local_page(host: str, port: int, path: str) -> tuple[str, str]:

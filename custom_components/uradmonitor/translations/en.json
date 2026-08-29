@@ -42,5 +42,16 @@
         }
       }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling settings",
+        "description": "Choose how often Home Assistant polls this device. Cloud devices using the same account share this setting.",
+        "data": {
+          "poll_interval": "Polling interval"
+        }
+      }
+    }
   }
 }

@@ -5,6 +5,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     SelectOptionDict,
@@ -24,10 +25,15 @@ from .const import (
     CONF_DEVICE_TYPE,
     CONF_HARDWARE_VERSION,
     CONF_HOST,
+    CONF_POLL_INTERVAL,
     CONF_PORT,
     CONF_SOFTWARE_VERSION,
+    DEFAULT_CLOUD_POLL_INTERVAL,
+    DEFAULT_LOCAL_POLL_INTERVAL,
     DOMAIN,
+    POLL_INTERVAL_OPTIONS,
 )
+from .coordinator import is_cloud_entry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +42,13 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a uradmonitor config flow."""
 
     VERSION = 1
+
+    @staticmethod
+    def async_get_options_flow(
+        _config_entry: ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Return the options flow for polling settings."""
+        return UradmonitorOptionsFlow()
 
     def __init__(self) -> None:
         """Initialize a config flow."""
@@ -236,3 +249,58 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if device_id is None and isinstance(data.get("data"), dict):
             device_id = data["data"].get("id")
         return str(device_id) if device_id is not None else None
+
+
+class UradmonitorOptionsFlow(config_entries.OptionsFlow):
+    """Handle polling interval changes."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:
+        """Manage polling interval options."""
+        config_entry = self.config_entry
+        default = (
+            DEFAULT_CLOUD_POLL_INTERVAL
+            if is_cloud_entry(config_entry)
+            else DEFAULT_LOCAL_POLL_INTERVAL
+        )
+        if user_input is not None:
+            options = {CONF_POLL_INTERVAL: int(user_input[CONF_POLL_INTERVAL])}
+            if is_cloud_entry(config_entry):
+                for entry in self.hass.config_entries.async_entries(DOMAIN):
+                    if (
+                        entry.entry_id != config_entry.entry_id
+                        and is_cloud_entry(entry)
+                        and entry.data.get(CONF_CLOUD_USER_ID)
+                        == config_entry.data.get(CONF_CLOUD_USER_ID)
+                        and entry.data.get(CONF_CLOUD_USER_KEY)
+                        == config_entry.data.get(CONF_CLOUD_USER_KEY)
+                    ):
+                        self.hass.config_entries.async_update_entry(
+                            entry, options=options
+                        )
+            return self.async_create_entry(title="", data=options)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_POLL_INTERVAL,
+                        default=str(
+                            config_entry.options.get(CONF_POLL_INTERVAL, default)
+                        ),
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(
+                                    value=str(seconds),
+                                    label=f"{seconds // 60} minutes",
+                                )
+                                for seconds in POLL_INTERVAL_OPTIONS
+                            ]
+                        )
+                    ),
+                }
+            ),
+        )

@@ -9,7 +9,7 @@ The official documentation confirms a local embedded webserver with JSON data an
 ## Confirmed documentation
 
 - Local Wi-Fi/Ethernet devices expose an embedded webserver, normally on port `80`.
-- Local JSON data is available through the device's JSON endpoint; the implementation currently targets `/j`.
+- Local JSON data is available through the device's JSON endpoint; runtime polling targets `/j`. The HTML status page is queried only during configuration for optional hardware/software metadata because its format varies between devices.
 - Cloud base URL: `https://data.uradmonitor.com/api/v1/`.
 - Cloud authentication uses `X-User-id` and `X-User-hash` headers.
 - `/devices` returns the devices available to the authenticated user.
