@@ -134,7 +134,7 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(str(device_id))
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
-                title=device.get("note") or f"UradMonitor {device_id}",
+                title=self._device_label(device),
                 data={
                     CONF_ACCESS_MODE: ACCESS_MODE_CLOUD,
                     CONF_CLOUD_USER_ID: self._cloud_client.user_id,
@@ -164,5 +164,6 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     def _device_label(device: dict[str, Any]) -> str:
         """Return a useful label for a cloud device."""
-        device_id = device["id"]
-        return device.get("note") or device.get("city") or f"UradMonitor {device_id}"
+        device_id = str(device["id"])
+        name = device.get("note") or device.get("city") or "UradMonitor"
+        return f"{name} (ID: {device_id})"
