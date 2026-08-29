@@ -10,4 +10,4 @@ Before publication:
 - Verify GitLab issue links remain usable from the GitHub copy.
 - Publish a GitHub release for each approved GitLab release tag.
 - Validate the GitHub repository with HACS and Home Assistant integration tooling.
-- Replace the temporary brand icon and placeholder metadata.
+- Replace the temporary brand icon when final project branding is available.
