@@ -14,6 +14,8 @@ In Home Assistant, go to **Settings → Devices & services → Add Integration**
 
 Each physical device is configured as a separate Home Assistant entry. Local and cloud devices can be used together.
 
+Local access requires network access to the device. Cloud access requires an active internet connection to the UradMonitor service.
+
 ## Local access
 
 Choose **Local** when Home Assistant can reach the device on the same network.

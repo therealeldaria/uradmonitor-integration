@@ -16,6 +16,8 @@ This project is a Python Home Assistant custom integration for uradmonitor envir
 
 The local API uses the device's embedded web server and JSON endpoint. The cloud API uses the User ID and User key from the UradMonitor Dashboard and can list the devices available to that account. Exact device models, measurements, and API response details will be added as confirmed during API research.
 
+Local access requires network access to the device. Cloud access requires an active internet connection. Home Assistant classifies this integration as local polling because it supports direct communication with local devices.
+
 ## Configuration
 
 The intended setup is UI-only through Home Assistant’s config flow. Each device gets its own entry and can choose local or cloud access independently. Local setup uses the device host and optional port (default `80`) and reads the local JSON endpoint. Cloud setup uses the User ID and User key from the UradMonitor Dashboard; after authentication, one available device is selected. Credentials are stored per device entry and must never appear in logs, fixtures, issues, or source control.

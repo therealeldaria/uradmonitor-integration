@@ -7,6 +7,6 @@
   "codeowners": ["@therealeldaria"],
   "config_flow": true,
   "integration_type": "hub",
-  "iot_class": "cloud_polling",
+  "iot_class": "local_polling",
   "requirements": []
 }
