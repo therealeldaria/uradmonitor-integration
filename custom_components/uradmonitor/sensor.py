@@ -45,6 +45,11 @@ _SENSOR_DEFINITIONS: dict[
     "uptime": ("s", SensorDeviceClass.DURATION, "mdi:timer-outline"),
 }
 
+# These values describe the device or its operation rather than the monitored
+# environment. Keeping them as diagnostic entities prevents them from being
+# mixed with the primary measurement sensors in Home Assistant.
+_DIAGNOSTIC_SENSORS = {"duty", "signal", "uptime", "voltage"}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -96,7 +101,7 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_icon = icon
-        if key == "duty":
+        if key in _DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
         self._attr_device_info = {"identifiers": {(DOMAIN, device_id)}}
 
