@@ -2,6 +2,8 @@
 
 > This integration is experimental and intended for testing. Do not rely on it for safety-critical monitoring.
 
+This is an unofficial community integration. It is not affiliated with, sponsored by, or endorsed by uRADMonitor or its manufacturer.
+
 ## Installation
 
 The planned primary installation method is HACS. Until this project is available through its public GitHub mirror, install it manually by copying or linking `custom_components/uradmonitor/` into the `custom_components/` directory of Home Assistant.

@@ -2,6 +2,8 @@
 
 HACS requires a public GitHub repository. GitLab remains the development, issue, and CI source of truth for this project.
 
+The project must be presented as an unofficial community integration. It must not imply affiliation with, sponsorship by, or endorsement from uRADMonitor or its manufacturer.
+
 Before publication:
 
 - Create the public GitHub mirror.

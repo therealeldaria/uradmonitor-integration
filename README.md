@@ -4,6 +4,8 @@
 
 This project is a Python Home Assistant custom integration for uradmonitor environmental monitoring devices. It will present supported measurements as Home Assistant sensor entities for dashboards, automations, and history.
 
+This is an unofficial community integration. It is not affiliated with, sponsored by, or endorsed by uRADMonitor or its manufacturer.
+
 ## Planned capabilities
 
 - Multiple independently configured uradmonitor devices.

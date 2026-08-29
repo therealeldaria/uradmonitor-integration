@@ -4,6 +4,8 @@
 
 `uradmonitor` is an early-development Home Assistant custom integration for uradmonitor environmental monitoring devices. It is intended for HACS distribution, with GitLab as the canonical development and issue-tracking project and a future public GitHub mirror for HACS.
 
+This is an unofficial community project and must not be described as affiliated with, sponsored by, or endorsed by uRADMonitor or its manufacturer.
+
 The implementation language is Python. Follow current Home Assistant APIs and asynchronous I/O conventions.
 
 ## Design decisions
