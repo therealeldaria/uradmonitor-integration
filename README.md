@@ -35,6 +35,8 @@ uv run pytest
 
 The project uses Ruff, pytest with Home Assistant test utilities, and GitLab CI for merge-request and `main` checks.
 
+The integration writes structured logs under `custom_components.uradmonitor`. Enable debug logging temporarily when investigating local or cloud connection problems; credentials are redacted and never logged.
+
 For manual testing, start the isolated Podman development instance with `podman compose -f compose.dev.yml up -d`. It uses Home Assistant's standard port, `8123`, and is documented in [docs/development-homeassistant.md](docs/development-homeassistant.md).
 
 ## Repository structure

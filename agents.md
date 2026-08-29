@@ -36,6 +36,7 @@ The implementation language is Python. Follow current Home Assistant APIs and as
 - Never block the event loop.
 - Keep user-facing text in `strings.json` and translations.
 - Redact tokens, passwords, email addresses, and device identifiers in diagnostics and logs.
+- Use module-level loggers and meaningful levels: `DEBUG` for request/response diagnostics, `INFO` for lifecycle events, `WARNING` for recoverable connectivity failures, and `ERROR` for invalid responses or setup failures. Never log credentials or authentication headers.
 - Preserve config-entry migration paths when stored data changes.
 - Never make live-network tests mandatory.
 - Update `README.md`, `CHANGELOG.md`, or `docs/` when behavior or setup changes.

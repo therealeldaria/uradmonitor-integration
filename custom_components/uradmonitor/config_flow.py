@@ -1,5 +1,6 @@
 """Config flow for uradmonitor."""
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -23,6 +24,8 @@ from .const import (
     CONF_PORT,
     DOMAIN,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -65,10 +68,19 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_HOST], user_input.get(CONF_PORT, 80)
                 )
             except UradmonitorApiError:
+                _LOGGER.error(
+                    "Unable to validate local UradMonitor at %s:%s",
+                    user_input[CONF_HOST],
+                    user_input.get(CONF_PORT, 80),
+                    exc_info=True,
+                )
                 errors["base"] = "cannot_connect"
             else:
                 device_id = local_data.get("id")
                 if not device_id:
+                    _LOGGER.error(
+                        "Local UradMonitor response did not contain a device ID"
+                    )
                     errors["base"] = "invalid_response"
                 else:
                     device_id = str(device_id)
@@ -108,6 +120,10 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 self._cloud_devices = await self._cloud_client.async_get_devices()
             except UradmonitorApiError:
+                _LOGGER.error(
+                    "Unable to retrieve devices from the UradMonitor cloud API",
+                    exc_info=True,
+                )
                 self._cloud_client = None
                 errors["base"] = "cannot_connect"
             else:

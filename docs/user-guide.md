@@ -45,6 +45,21 @@ Available sensor entities depend on the device model and the measurements return
 
 Treat the User key as a secret. Do not include it in logs, screenshots, issue reports, fixtures, or source control. Redact credentials and device identifiers before sharing diagnostics.
 
+## Logging
+
+The integration logs setup, API requests, response validation, and connection failures under `custom_components.uradmonitor`. API keys and User keys are never written to the log.
+
+For detailed troubleshooting, add this to Home Assistant's `configuration.yaml`:
+
+```yaml
+logger:
+  default: info
+  logs:
+    custom_components.uradmonitor: debug
+```
+
+Set the logger back to `info` after troubleshooting to avoid unnecessary log volume.
+
 ## API references
 
 - [Direct Data Access](https://www.uradmonitor.com/direct-data-access/)
