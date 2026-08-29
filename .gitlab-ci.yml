@@ -21,7 +21,7 @@ quality:
     - uv run ruff format --check .
     - uv run pytest
     - python -m json.tool custom_components/uradmonitor/manifest.json >/dev/null
-    - python -m json.tool custom_components/uradmonitor/strings.json >/dev/null
+    - python -m json.tool custom_components/uradmonitor/translations/en.json >/dev/null
 
 release-to-github:
   stage: release

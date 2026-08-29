@@ -16,7 +16,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors for one uradmonitor config entry."""
-    # No measurements are exposed until the API schema is verified.
+    # Measurements are not exposed until the API schema is verified.
     _LOGGER.debug("No UradMonitor sensors created before API schema verification")
     async_add_entities([])
 

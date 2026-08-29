@@ -19,9 +19,13 @@ from .const import (
     CONF_ACCESS_MODE,
     CONF_CLOUD_USER_ID,
     CONF_CLOUD_USER_KEY,
+    CONF_DETECTOR,
     CONF_DEVICE_ID,
+    CONF_DEVICE_TYPE,
+    CONF_HARDWARE_VERSION,
     CONF_HOST,
     CONF_PORT,
+    CONF_SOFTWARE_VERSION,
     DOMAIN,
 )
 
@@ -64,36 +68,52 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             client = UradmonitorApiClient(async_get_clientsession(self.hass))
             try:
-                local_data = await client.async_get_local_data(
+                metadata = await client.async_get_local_metadata(
                     user_input[CONF_HOST], user_input.get(CONF_PORT, 80)
                 )
             except UradmonitorApiError:
-                _LOGGER.error(
-                    "Unable to validate local UradMonitor at %s:%s",
+                _LOGGER.warning(
+                    "Unable to retrieve optional metadata from local "
+                    "UradMonitor at %s:%s",
                     user_input[CONF_HOST],
                     user_input.get(CONF_PORT, 80),
                     exc_info=True,
                 )
-                errors["base"] = "cannot_connect"
-            else:
-                device_id = self._local_device_id(local_data)
-                if not device_id:
+                metadata = {}
+
+            device_id = metadata.get(CONF_DEVICE_ID)
+            if not device_id:
+                try:
+                    local_data = await client.async_get_local_data(
+                        user_input[CONF_HOST], user_input.get(CONF_PORT, 80)
+                    )
+                except UradmonitorApiError:
                     _LOGGER.error(
-                        "Local UradMonitor response did not contain a device ID"
+                        "Unable to validate local UradMonitor at %s:%s",
+                        user_input[CONF_HOST],
+                        user_input.get(CONF_PORT, 80),
+                        exc_info=True,
                     )
-                    errors["base"] = "invalid_response"
+                    errors["base"] = "cannot_connect"
                 else:
-                    device_id = str(device_id)
-                    await self.async_set_unique_id(device_id)
-                    self._abort_if_unique_id_configured()
-                    return self.async_create_entry(
-                        title=user_input[CONF_HOST],
-                        data={
-                            **user_input,
-                            CONF_ACCESS_MODE: ACCESS_MODE_LOCAL,
-                            CONF_DEVICE_ID: device_id,
-                        },
-                    )
+                    device_id = self._local_device_id(local_data)
+
+            if not device_id:
+                _LOGGER.error("Local UradMonitor response did not contain a device ID")
+                errors["base"] = "invalid_response"
+            else:
+                device_id = str(device_id)
+                await self.async_set_unique_id(device_id)
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(
+                    title=self._device_name(device_id),
+                    data={
+                        **user_input,
+                        CONF_ACCESS_MODE: ACCESS_MODE_LOCAL,
+                        CONF_DEVICE_ID: device_id,
+                        **metadata,
+                    },
+                )
 
         return self.async_show_form(
             step_id="local",
@@ -158,12 +178,13 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(str(device_id))
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
-                title=self._device_label(device),
+                title=self._device_name(str(device_id)),
                 data={
                     CONF_ACCESS_MODE: ACCESS_MODE_CLOUD,
                     CONF_CLOUD_USER_ID: self._cloud_client.user_id,
                     CONF_CLOUD_USER_KEY: self._cloud_client.user_key,
                     CONF_DEVICE_ID: device_id,
+                    **self._cloud_metadata(device),
                 },
             )
 
@@ -191,6 +212,22 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         device_id = str(device["id"])
         name = device.get("note") or device.get("city") or "UradMonitor"
         return f"{name} (ID: {device_id})"
+
+    @staticmethod
+    def _device_name(device_id: str) -> str:
+        """Return the default Home Assistant device name."""
+        return device_id
+
+    @staticmethod
+    def _cloud_metadata(device: dict[str, Any]) -> dict[str, str]:
+        """Extract shared metadata from a cloud device response."""
+        metadata = {
+            CONF_DEVICE_TYPE: device.get("type"),
+            CONF_DETECTOR: device.get("detector"),
+            CONF_HARDWARE_VERSION: device.get("versionhw"),
+            CONF_SOFTWARE_VERSION: device.get("versionsw"),
+        }
+        return {key: str(value) for key, value in metadata.items() if value is not None}
 
     @staticmethod
     def _local_device_id(data: dict[str, Any]) -> str | None:

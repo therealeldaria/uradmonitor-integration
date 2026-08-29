@@ -7,6 +7,7 @@ from custom_components.uradmonitor.const import (
     CONF_HOST,
     DOMAIN,
 )
+from custom_components.uradmonitor.models import get_model
 
 
 def test_local_access_mode_constants():
@@ -44,19 +45,36 @@ def test_cloud_device_label_has_generic_fallback():
     )
 
 
+def test_device_name_is_device_id_for_all_access_modes():
+    """The stable device ID is used as the Home Assistant device name."""
+    assert UradmonitorConfigFlow._device_name("5E6F7081") == "5E6F7081"
+
+
+def test_known_model_mappings():
+    """Known detector and hardware combinations resolve to their model."""
+    assert get_model("SBM20", 109) == "Model A"
+    assert get_model("SI29BG", 104) == "Model A3"
+    assert get_model("SI29BG", 110) == "Model A3"
+
+
+def test_unknown_model_mapping_is_explicit():
+    """New hardware combinations remain visible as unknown."""
+    assert get_model("unknown", "unknown") == "Unknown"
+
+
 def test_local_device_id_is_read_from_data_object():
     """The local JSON endpoint returns the ID inside its data object."""
     response = {
         "data": {
-            "id": "8200005B",
+            "id": "5E6F7081",
             "type": "8",
             "detector": "SI29BG",
             "temperature": 26.70,
         }
     }
-    assert UradmonitorConfigFlow._local_device_id(response) == "8200005B"
+    assert UradmonitorConfigFlow._local_device_id(response) == "5E6F7081"
 
 
 def test_local_device_id_supports_top_level_fallback():
     """A top-level ID remains supported for alternate local responses."""
-    assert UradmonitorConfigFlow._local_device_id({"id": "8200005B"}) == "8200005B"
+    assert UradmonitorConfigFlow._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
