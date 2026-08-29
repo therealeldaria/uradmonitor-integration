@@ -2449,7 +2449,7 @@ wheels = [
 
 [[package]]
 name = "uradmonitor-homeassistant"
-version = "2026.8.0"
+version = "2026.8.1"
 source = { virtual = "." }
 dependencies = [
     { name = "homeassistant" },

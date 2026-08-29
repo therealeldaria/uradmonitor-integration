@@ -2,7 +2,7 @@
 
 All notable changes will be documented here.
 
-## 2026.08.0 - Alpha
+## 2026.08.1 - Alpha
 
 - Initial Home Assistant sensor entities for local and cloud uRADMonitor devices.
 - Per-device local or cloud configuration with stable device IDs.
