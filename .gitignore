@@ -16,3 +16,8 @@ secrets.yaml
 local/
 .idea/
 .vscode/
+# PyCharm / JetBrains local project files
+*.iml
+*.iws
+*.ipr
+out/
