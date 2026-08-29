@@ -11,7 +11,7 @@ The implementation language is Python. Follow current Home Assistant APIs and as
 - Use one Home Assistant config entry per physical device.
 - Configure each device through the UI config flow; do not add YAML configuration.
 - Each device independently selects the local API or cloud API.
-- Local configuration must not request an API key. Cloud configuration currently requests only a cloud API key; do not add username/password fields without verified API documentation.
+- Local configuration must not request an API key. Cloud configuration uses the documented User ID and User key headers; do not add username/password fields or rename these credentials without verified API documentation.
 - Store credentials per entry and never log or commit secrets.
 - Use a stable serial number or API-provided unique identifier for identity. Never use an IP address as identity.
 - Expose only a documented, normalized set of supported measurements.

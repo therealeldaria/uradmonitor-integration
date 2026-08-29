@@ -3,22 +3,41 @@
     "step": {
       "user": {
         "title": "Connect uradmonitor",
-        "description": "Choose how to access one uradmonitor device.",
+        "description": "Choose how Home Assistant should connect to this UradMonitor device. Local access reads data directly from the device. Cloud access uses the UradMonitor REST API.",
         "data": {
           "access_mode": "Access mode"
         }
       },
       "local": {
         "title": "Connect local uradmonitor",
+        "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. No API key is required.",
         "data": {
-          "host": "Local host",
-          "port": "Local port"
+          "host": "Device IP address or hostname",
+          "port": "Local API port"
+        },
+        "data_description": {
+          "port": "The local API normally uses port 80. Change this only if your device uses another port."
+        },
+        "error": {
+          "cannot_connect": "Unable to connect to the local device. Check the host and port."
         }
       },
       "cloud": {
         "title": "Connect uradmonitor cloud",
+        "description": "Enter the User ID and User key shown in the UradMonitor Dashboard. The integration will retrieve the devices available to your account.",
         "data": {
-          "cloud_api_key": "Cloud API key"
+          "cloud_user_id": "User ID",
+          "cloud_user_key": "User key"
+        },
+        "error": {
+          "cannot_connect": "Unable to connect to the UradMonitor cloud API. Check the User ID and User key."
+        }
+      },
+      "cloud_device": {
+        "title": "Select UradMonitor device",
+        "description": "Select the device you want to add to Home Assistant. Repeat setup to add another device.",
+        "data": {
+          "device_id": "Device"
         }
       }
     }

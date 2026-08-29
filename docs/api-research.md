@@ -4,7 +4,19 @@ This document is the source-of-truth log for uradmonitor API discovery.
 
 ## Current status
 
-No local or cloud API endpoint, authentication scheme, device model, or measurement schema has been verified yet.
+The official documentation confirms a local embedded webserver with JSON data and a cloud REST API. Implementation details still need validation against real responses and devices.
+
+## Confirmed documentation
+
+- Local Wi-Fi/Ethernet devices expose an embedded webserver, normally on port `80`.
+- Local JSON data is available through the device's JSON endpoint; the implementation currently targets `/j`.
+- Cloud base URL: `https://data.uradmonitor.com/api/v1/`.
+- Cloud authentication uses `X-User-id` and `X-User-hash` headers.
+- `/devices` returns the devices available to the authenticated user.
+- `/devices/[ID]` returns the sensors for one device.
+- `/devices/[ID]/[sensor]/[startinterval]/[stopinterval]` returns interval data.
+- The server specification recommends using `last_<sensor>` fields from `/devices` for normal polling to reduce server load.
+- API usage is subject to the published uRADMonitor terms and rate limits.
 
 ## Research rules
 
@@ -16,8 +28,8 @@ No local or cloud API endpoint, authentication scheme, device model, or measurem
 
 ## Open questions
 
-- Which device models expose local APIs?
+- Which device models expose local JSON APIs?
 - Which models and measurements are supported by the cloud API?
 - How are devices and measurements identified?
-- What authentication and rate limits apply?
+- Which exact response fields and values are returned by each supported model?
 - Is local discovery available, and through which protocol?
