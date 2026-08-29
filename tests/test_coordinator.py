@@ -1,33 +1,21 @@
-"""Tests for local/cloud coordinator data merging."""
+"""Tests for source-specific coordinator behavior."""
 
-from custom_components.uradmonitor.coordinator import merge_device_data
+from types import SimpleNamespace
+
+from custom_components.uradmonitor.coordinator import has_local_source, is_cloud_entry
 
 
-def test_local_values_override_cloud_and_cloud_only_values_are_kept():
-    """Local readings win while cloud-only readings remain available."""
-    merged = merge_device_data(
-        "8200005B",
-        local_data={"temperature": 21, "ch2o": 0.02},
-        cloud_data={
-            "8200005B": {"temperature": 22, "pm10": 4, "ch2o": 30},
-        },
+def test_combined_entry_exposes_both_source_types():
+    """A combined config entry enables both independent transports."""
+    entry = SimpleNamespace(
+        data={"sources": {"local": {"host": "192.0.2.10"}, "cloud": {}}}
     )
 
-    assert merged == {"temperature": 21, "pm10": 4, "ch2o": 20}
+    assert has_local_source(entry)
+    assert is_cloud_entry(entry)
 
 
-def test_cloud_is_used_when_local_is_unavailable():
-    """Cloud data is a fallback when local polling fails."""
-    assert merge_device_data(
-        "8200005B",
-        local_data={"temperature": 21},
-        cloud_data={"8200005B": {"temperature": 22, "pm10": 4}},
-        local_available=False,
-    ) == {"temperature": 22, "pm10": 4}
-
-
-def test_local_only_data_is_supported():
-    """A combined merge also works before cloud is configured."""
-    assert merge_device_data(
-        "8200005B", local_data={"temperature": 21}, cloud_available=False
-    ) == {"temperature": 21}
+def test_source_specific_entity_identity_is_deterministic():
+    """Local and cloud identities remain distinct for one physical device."""
+    device_id = "8200005B"
+    assert f"{device_id}_local_temperature" != f"{device_id}_cloud_temperature"

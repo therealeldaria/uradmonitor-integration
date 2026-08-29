@@ -14,9 +14,9 @@ Restart Home Assistant after installing or updating the integration.
 
 In Home Assistant, go to **Settings → Devices & services → Add Integration** and search for **UradMonitor**.
 
-Each physical device is configured as a separate Home Assistant entry. A device may use local access, cloud access, or both. To combine sources, add the second source normally and select the same device; the integration matches sources by device ID and keeps one Home Assistant device.
+Each physical device is configured as a separate Home Assistant entry. A device may use local access, cloud access, or both. To add both sources, add the second source normally and select the same device; the integration matches sources by device ID but keeps separate Local and Cloud Home Assistant devices.
 
-When both sources are configured, local data has priority for overlapping sensors. Cloud data supplies cloud-only sensors and is used as fallback when local data is unavailable. Polling remains independent: local polling defaults to five minutes and cloud polling defaults to fifteen minutes.
+Local and cloud entities are deliberately not merged because their values can use different compensation and aggregation. Polling remains independent: local polling defaults to five minutes and cloud polling defaults to fifteen minutes.
 
 Local access requires network access to the device. Cloud access requires an active internet connection to the UradMonitor service.
 

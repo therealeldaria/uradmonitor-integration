@@ -2,6 +2,11 @@
 
 All notable changes will be documented here.
 
+## 2026.08.4 - Alpha
+
+- Keep local and cloud readings as separate Home Assistant devices and entities.
+- Use source-specific identifiers while retaining the physical device ID for matching and display.
+
 ## 2026.08.3 - Alpha
 
 - Reissued the combined local/cloud source release after fixing GitHub mirror tag publishing.

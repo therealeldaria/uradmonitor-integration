@@ -57,16 +57,18 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors for one uRADMonitor config entry."""
-    coordinator: UradmonitorCoordinator = hass.data[DOMAIN]["coordinators"][
-        entry.entry_id
-    ]
+    coordinators: dict[str, UradmonitorCoordinator] = hass.data[DOMAIN][
+        "source_coordinators"
+    ][entry.entry_id]
     device_id = str(entry.data[CONF_DEVICE_ID])
-    data = coordinator.device_data(device_id)
-    entities = [
-        UradmonitorSensor(coordinator, entry, device_id, key, *definition)
-        for key, definition in _SENSOR_DEFINITIONS.items()
-        if key in data
-    ]
+    entities = []
+    for source, coordinator in coordinators.items():
+        data = coordinator.device_data(device_id)
+        entities.extend(
+            UradmonitorSensor(coordinator, entry, device_id, source, key, *definition)
+            for key, definition in _SENSOR_DEFINITIONS.items()
+            if key in data
+        )
     _LOGGER.debug(
         "Creating %d UradMonitor sensor(s) for %s: %s",
         len(entities),
@@ -86,6 +88,7 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
         coordinator: UradmonitorCoordinator,
         entry: ConfigEntry,
         device_id: str,
+        source: str,
         key: str,
         unit: str | None,
         device_class: SensorDeviceClass | None,
@@ -95,15 +98,16 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
         super().__init__(coordinator)
         self.entry = entry
         self.device_id = device_id
+        self.source = source
         self.key = key
         self._attr_translation_key = key
-        self._attr_unique_id = f"{device_id}_{key}"
+        self._attr_unique_id = f"{device_id}_{source}_{key}"
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_icon = icon
         if key in _DIAGNOSTIC_SENSORS:
             self._attr_entity_category = EntityCategory.DIAGNOSTIC
-        self._attr_device_info = {"identifiers": {(DOMAIN, device_id)}}
+        self._attr_device_info = {"identifiers": {(DOMAIN, f"{device_id}_{source}")}}
 
     @property
     def native_value(self) -> float | None:

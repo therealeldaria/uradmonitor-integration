@@ -30,16 +30,10 @@ from .const import (
     DOMAIN,
     PLATFORMS,
 )
-from .coordinator import (
-    UradmonitorCombinedCoordinator,
-    UradmonitorCoordinator,
-    has_local_source,
-    is_cloud_entry,
-)
+from .coordinator import UradmonitorCoordinator, has_local_source, is_cloud_entry
 from .models import get_model
 
 _LOGGER = logging.getLogger(__name__)
-_COORDINATORS = "coordinators"
 _CLOUD_COORDINATORS = "cloud_coordinators"
 _SOURCE_COORDINATORS = "source_coordinators"
 
@@ -62,10 +56,10 @@ def _cloud_key(entry: ConfigEntry) -> tuple[str, str]:
     )
 
 
-async def _async_get_coordinator(
+async def _async_get_coordinators(
     hass: HomeAssistant, entry: ConfigEntry
-) -> UradmonitorCoordinator | UradmonitorCombinedCoordinator:
-    """Create or reuse a coordinator for a config entry."""
+) -> dict[str, UradmonitorCoordinator]:
+    """Create or reuse source coordinators for a config entry."""
     domain_data: dict[str, Any] = hass.data.setdefault(DOMAIN, {})
     sources: dict[str, UradmonitorCoordinator] = {}
     if has_local_source(entry):
@@ -113,10 +107,9 @@ async def _async_get_coordinator(
                 if len(sources) == 1:
                     await source.async_config_entry_first_refresh()
                 else:
-                    # A combined entry must remain usable when one transport
-                    # is temporarily unavailable. The other source can still
-                    # provide readings and the failed source will retry on its
-                    # normal coordinator schedule.
+                    # Multiple sources must initialize independently. One
+                    # temporarily unavailable transport must not prevent the
+                    # other source from providing its own entities.
                     await source.async_refresh()
             except UpdateFailed as err:
                 _LOGGER.warning(
@@ -131,17 +124,15 @@ async def _async_get_coordinator(
                     source.last_exception,
                 )
 
-    if len(sources) == 1:
-        combined = next(iter(sources.values()))
-    else:
-        combined = UradmonitorCombinedCoordinator(
-            hass, entry, sources.get("local"), sources.get("cloud")
-        )
     domain_data.setdefault(_SOURCE_COORDINATORS, {})[entry.entry_id] = sources
-    domain_data.setdefault(_COORDINATORS, {})[entry.entry_id] = combined
-    if combined.data is None or not combined.data:
+    if not any(source.data for source in sources.values()):
         raise ConfigEntryNotReady("No UradMonitor source returned data")
-    return combined
+    return sources
+
+
+def _source_identifier(device_id: str, source: str) -> str:
+    """Return the Home Assistant identifier for one transport."""
+    return f"{device_id}_{source}"
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -156,25 +147,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     device_registry = dr.async_get(hass)
+    coordinators = await _async_get_coordinators(hass, entry)
     detector = entry.data.get(CONF_DETECTOR)
     model = get_model(detector, entry.data.get(CONF_HARDWARE_VERSION))
     if detector:
         model = f"{model} ({detector})"
-    device = device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, str(device_id))},
-        name=str(device_id),
-        manufacturer="uRADMonitor",
-        model=model,
-        hw_version=entry.data.get(CONF_HARDWARE_VERSION),
-        sw_version=entry.data.get(CONF_SOFTWARE_VERSION),
-    )
-    if not device.name_by_user and device.name != str(device_id):
-        device_registry.async_update_device(device.id, name=str(device_id))
-    coordinator = await _async_get_coordinator(hass, entry)
-    hass.data.setdefault(DOMAIN, {}).setdefault(_COORDINATORS, {})[entry.entry_id] = (
-        coordinator
-    )
+    for source in coordinators:
+        device = device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={(DOMAIN, _source_identifier(str(device_id), source))},
+            name=f"{device_id} ({source.title()})",
+            manufacturer="uRADMonitor",
+            model=model,
+            hw_version=entry.data.get(CONF_HARDWARE_VERSION),
+            sw_version=entry.data.get(CONF_SOFTWARE_VERSION),
+            serial_number=str(device_id),
+        )
+        if not device.name_by_user and device.name != f"{device_id} ({source.title()})":
+            device_registry.async_update_device(
+                device.id, name=f"{device_id} ({source.title()})"
+            )
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -225,10 +217,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         domain_data = hass.data[DOMAIN]
-        coordinator = domain_data.get(_COORDINATORS, {}).pop(entry.entry_id, None)
         sources = domain_data.get(_SOURCE_COORDINATORS, {}).pop(entry.entry_id, {})
-        if isinstance(coordinator, UradmonitorCombinedCoordinator):
-            await coordinator.async_shutdown()
         if is_cloud_entry(entry):
             key = _cloud_key(entry)
             shared = domain_data.get(_CLOUD_COORDINATORS, {}).get(key)

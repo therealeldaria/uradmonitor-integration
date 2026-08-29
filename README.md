@@ -10,19 +10,19 @@ This is an unofficial community integration. It is not affiliated with, sponsore
 
 - Multiple independently configured uradmonitor devices.
 - One Home Assistant config entry per physical device.
-- Per-device local API and/or cloud API access, combined automatically by device ID.
+- Per-device local API and/or cloud API access with separate Home Assistant devices.
 - Stable identity based on the API-provided device ID.
 - Normalized sensor values and Home Assistant metadata, including local/cloud unit conversion.
 - Retry and availability handling when a device or service is temporarily unavailable.
 - Shared cloud polling for devices using the same account.
 
-The local API uses the device's embedded web server. Metadata is read from the HTML status page once during configuration; runtime readings are read from `/j`. The cloud API uses the User ID and User key from the UradMonitor Dashboard and lists devices available to that account. The device ID returned by either API is used as the stable Home Assistant identity. If both sources are configured for the same device, they become one Home Assistant device: local readings take precedence and cloud readings fill in missing values or act as fallback. Anonymous public-device subscriptions are not supported.
+The local API uses the device's embedded web server. Metadata is read from the HTML status page once during configuration; runtime readings are read from `/j`. The cloud API uses the User ID and User key from the UradMonitor Dashboard and lists devices available to that account. If both sources are configured for the same physical device, Home Assistant shows separate `(Local)` and `(Cloud)` devices because the values may use different compensation and aggregation. Anonymous public-device subscriptions are not supported.
 
 Local access requires network access to the device. Cloud access requires an active internet connection. Home Assistant classifies this integration as local polling because it supports direct communication with local devices.
 
 ## Configuration
 
-Setup is UI-only through Home Assistant’s config flow. Each physical device gets its own entry and can use local access, cloud access, or both. Add the second source normally; the integration matches it automatically using the device ID. Local setup uses the device host and optional port (default `80`). Cloud setup uses the User ID and User key from the UradMonitor Dashboard; after authentication, one available device is selected. Repeat setup to add more devices. Credentials are stored per device entry and must never appear in logs, fixtures, issues, or source control.
+Setup is UI-only through Home Assistant’s config flow. Each physical device gets its own entry and can use local access, cloud access, or both. Add the second source normally; the integration matches it automatically using the device ID and creates a separate source device. Local setup uses the device host and optional port (default `80`). Cloud setup uses the User ID and User key from the UradMonitor Dashboard; after authentication, one available device is selected. Repeat setup to add more devices. Credentials are stored per device entry and must never appear in logs, fixtures, issues, or source control.
 
 Cloud setup can only add devices returned for the authenticated account. This includes owned devices and any devices for which uRADMonitor grants the account global access. A device ID alone is not sufficient for anonymous access.
 
