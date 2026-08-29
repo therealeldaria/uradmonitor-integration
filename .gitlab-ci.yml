@@ -64,4 +64,7 @@ mirror-main-to-github:
     - git config user.email "gitlab-mirror@noreply.invalid"
     - git add README.md
     - git commit -m "Update GitHub mirror README"
-    - git push github "HEAD:refs/heads/main"
+    # GitHub main contains the mirror-only README commit, so it is not a
+    # fast-forward of GitLab main. GitLab is the canonical source of truth.
+    - git fetch github main
+    - git push --force-with-lease=refs/heads/main github "HEAD:refs/heads/main"
