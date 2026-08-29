@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {"title": "Anslut uradmonitor", "data": {"access_mode": "Anslutningssätt"}},
+      "local": {"title": "Anslut lokal uradmonitor", "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"}},
+      "cloud": {"title": "Anslut uradmonitor-molnet", "data": {"cloud_user_id": "Användar-ID", "cloud_user_key": "Användarnyckel"}},
+      "cloud_device": {"title": "Välj uradmonitor-enhet", "data": {"device_id": "Enhet"}}
+    }
+  },
+  "options": {
+    "step": {
+      "init": {"title": "Pollinginställningar", "data": {"poll_interval": "Pollingintervall"}}
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpm": {"name": "Radioaktivitet"},
+      "temperature": {"name": "Temperatur"},
+      "humidity": {"name": "Luftfuktighet"},
+      "pressure": {"name": "Lufttryck"},
+      "voc": {"name": "VOC-resistans"},
+      "vocaqi": {"name": "VOC AQI"},
+      "co2": {"name": "Koldioxid"},
+      "ch2o": {"name": "Formaldehyd"},
+      "pm1": {"name": "PM1"},
+      "pm25": {"name": "PM2.5"},
+      "pm10": {"name": "PM10"},
+      "o3": {"name": "Ozon"},
+      "noise": {"name": "Ljud"},
+      "signal": {"name": "Signalstyrka"},
+      "voltage": {"name": "Spänning"},
+      "duty": {"name": "Högspänningsomvandlarens arbetscykel"},
+      "uptime": {"name": "Drifttid"}
+    }
+  }
+}

@@ -5,7 +5,7 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -16,34 +16,33 @@ from .coordinator import UradmonitorCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 _SENSOR_DEFINITIONS: dict[
-    str, tuple[str, str | None, SensorDeviceClass | None, str | None]
+    str, tuple[str | None, SensorDeviceClass | None, str | None]
 ] = {
     # uRADMonitor reports radiation as CPM. The established integration
     # convention converts it to an approximate µSv/h value using cpm / 100.
-    "cpm": ("Radiation", "µSv/h", None, "mdi:radioactive"),
+    "cpm": ("µSv/h", None, "mdi:radioactive"),
     "temperature": (
-        "Temperature",
         UnitOfTemperature.CELSIUS,
         SensorDeviceClass.TEMPERATURE,
         None,
     ),
-    "humidity": ("Humidity", PERCENTAGE, SensorDeviceClass.HUMIDITY, None),
-    "pressure": ("Pressure", "hPa", SensorDeviceClass.PRESSURE, None),
-    "voc": ("VOC", "Ω", None, "mdi:air-filter"),
-    "vocaqi": ("VOC AQI", None, SensorDeviceClass.AQI, None),
-    "co2": ("Carbon dioxide", "ppm", SensorDeviceClass.CO2, None),
+    "humidity": (PERCENTAGE, SensorDeviceClass.HUMIDITY, None),
+    "pressure": ("hPa", SensorDeviceClass.PRESSURE, None),
+    "voc": ("Ω", None, "mdi:air-filter"),
+    "vocaqi": (None, SensorDeviceClass.AQI, None),
+    "co2": ("ppm", SensorDeviceClass.CO2, None),
     # Cloud responses use ppb; local /j responses use ppm and are converted
     # in native_value so both transports expose the same entity unit.
-    "ch2o": ("Formaldehyde", "ppb", None, "mdi:flask-outline"),
-    "pm1": ("PM1", "µg/m³", SensorDeviceClass.PM1, None),
-    "pm25": ("PM2.5", "µg/m³", SensorDeviceClass.PM25, None),
-    "pm10": ("PM10", "µg/m³", SensorDeviceClass.PM10, None),
-    "o3": ("Ozone", "ppb", SensorDeviceClass.OZONE, None),
-    "noise": ("Noise", "dB", SensorDeviceClass.SOUND_PRESSURE, None),
-    "signal": ("Signal strength", "dBm", SensorDeviceClass.SIGNAL_STRENGTH, None),
-    "voltage": ("Voltage", "V", SensorDeviceClass.VOLTAGE, None),
-    "duty": ("Duty cycle", "‰", None, None),
-    "uptime": ("Uptime", "s", SensorDeviceClass.DURATION, "mdi:timer-outline"),
+    "ch2o": ("ppb", None, "mdi:flask-outline"),
+    "pm1": ("µg/m³", SensorDeviceClass.PM1, None),
+    "pm25": ("µg/m³", SensorDeviceClass.PM25, None),
+    "pm10": ("µg/m³", SensorDeviceClass.PM10, None),
+    "o3": ("ppb", SensorDeviceClass.OZONE, None),
+    "noise": ("dB", SensorDeviceClass.SOUND_PRESSURE, None),
+    "signal": ("dBm", SensorDeviceClass.SIGNAL_STRENGTH, None),
+    "voltage": ("V", SensorDeviceClass.VOLTAGE, None),
+    "duty": ("‰", None, None),
+    "uptime": ("s", SensorDeviceClass.DURATION, "mdi:timer-outline"),
 }
 
 
@@ -83,7 +82,6 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
         entry: ConfigEntry,
         device_id: str,
         key: str,
-        name: str,
         unit: str | None,
         device_class: SensorDeviceClass | None,
         icon: str | None,
@@ -93,11 +91,13 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
         self.entry = entry
         self.device_id = device_id
         self.key = key
-        self._attr_name = name
+        self._attr_translation_key = key
         self._attr_unique_id = f"{device_id}_{key}"
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_icon = icon
+        if key == "duty":
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
         self._attr_device_info = {"identifiers": {(DOMAIN, device_id)}}
 
     @property

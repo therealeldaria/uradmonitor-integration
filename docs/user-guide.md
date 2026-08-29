@@ -6,7 +6,7 @@ This is an unofficial community integration. It is not affiliated with, sponsore
 
 ## Installation
 
-The planned primary installation method is HACS. Until this project is available through its public GitHub mirror, install it manually by copying or linking `custom_components/uradmonitor/` into the `custom_components/` directory of Home Assistant.
+The primary installation method is HACS through the public GitHub release mirror. For development or before the mirror is available, install it manually by copying or linking `custom_components/uradmonitor/` into the `custom_components/` directory of Home Assistant.
 
 Restart Home Assistant after installing or updating the integration.
 
@@ -27,7 +27,7 @@ Enter:
 - The device IP address or hostname.
 - The optional local API port. The documented default is `80`.
 
-The integration reads JSON data from the device's local JSON endpoint. No API key or cloud credentials are required for local access.
+The integration reads runtime data from the device's `/j` JSON endpoint. The HTML status page is read once during setup for optional hardware metadata. No API key or cloud credentials are required for local access.
 
 ## Cloud access
 
@@ -37,7 +37,9 @@ Enter the **User ID** and **User key** shown in the UradMonitor Dashboard. These
 
 After authentication, the integration retrieves the devices available to the account. Select one device to add. Repeat the setup flow to add additional devices.
 
-The exact location and account process for obtaining these values may depend on the UradMonitor service setup.
+Only devices returned for the authenticated account can be added. This includes devices owned by the account and devices where uRADMonitor has granted the account global access. Anonymous public device IDs are not supported.
+
+The exact location and account process for obtaining these values may depend on the UradMonitor service setup. Cloud polling defaults to every 15 minutes and is shared by entries using the same account. Local polling defaults to every 5 minutes.
 
 ## Sensors
 

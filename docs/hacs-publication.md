@@ -8,8 +8,8 @@ Before publication:
 
 - Create the public GitHub mirror.
 - Configure `GH_REPOSITORY` and protected `GITHUB_TOKEN` in GitLab CI.
-- Verify the integration manifest, `hacs.json`, package layout, and brand asset.
+- Verify the integration manifest, `hacs.json`, package layout, and `custom_components/uradmonitor/brand/` assets.
 - Verify GitLab issue links remain usable from the GitHub copy.
 - Publish a GitHub release for each approved GitLab release tag.
 - Validate the GitHub repository with HACS and Home Assistant integration tooling.
-- Replace the temporary brand icon when final project branding is available.
+- Confirm the original brand icon and hDPI icon are included in the published repository.

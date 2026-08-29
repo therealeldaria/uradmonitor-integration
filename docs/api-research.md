@@ -17,6 +17,8 @@ The official documentation confirms a local embedded webserver with JSON data an
 - `/devices/[ID]/[sensor]/[startinterval]/[stopinterval]` returns interval data.
 - The server specification recommends using `last_<sensor>` fields from `/devices` for normal polling to reduce server load.
 - API usage is subject to the published uRADMonitor terms and rate limits.
+- The authenticated `/devices` response contains the devices available to the account; a device ID without account access returns an access-denied response in testing.
+- Anonymous public-device subscriptions are not currently supported by this integration. The documented REST calls require authentication.
 
 ## Research rules
 
