@@ -3,22 +3,29 @@
     "step": {
       "user": {
         "title": "Connect uradmonitor",
-        "description": "Configure one uradmonitor device.",
+        "description": "Choose how to access one uradmonitor device.",
         "data": {
-          "access_mode": "Access mode",
+          "access_mode": "Access mode"
+        }
+      },
+      "local": {
+        "title": "Connect local uradmonitor",
+        "data": {
           "host": "Local host",
-          "port": "Local port",
-          "api_token": "Local API token",
-          "cloud_username": "Cloud username",
-          "cloud_password": "Cloud password"
+          "port": "Local port"
         },
         "data_description": {
-          "access_mode": "Choose local or cloud access for this device.",
           "host": "Hostname or IP address of the local device.",
-          "port": "Port used by the local API.",
-          "api_token": "Token for the local API, if required.",
-          "cloud_username": "Account used by the cloud API.",
-          "cloud_password": "Password for the cloud API."
+          "port": "Port used by the local API."
+        }
+      },
+      "cloud": {
+        "title": "Connect uradmonitor cloud",
+        "data": {
+          "cloud_api_key": "Cloud API key"
+        },
+        "data_description": {
+          "cloud_api_key": "API key used to access the uradmonitor cloud service."
         }
       }
     }

@@ -18,7 +18,7 @@ Exact device models, measurements, endpoints, authentication, polling limits, an
 
 ## Configuration
 
-The intended setup is UI-only through Home Assistant’s config flow. Each device gets its own entry and can choose local or cloud access independently. Credentials are stored per device entry and must never appear in logs, fixtures, issues, or source control.
+The intended setup is UI-only through Home Assistant’s config flow. Each device gets its own entry and can choose local or cloud access independently. Local setup uses the device host and port; cloud setup uses a cloud API key. Credentials are stored per device entry and must never appear in logs, fixtures, issues, or source control.
 
 ## Development
 
