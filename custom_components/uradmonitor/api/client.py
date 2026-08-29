@@ -47,7 +47,10 @@ class UradmonitorApiClient:
         if not isinstance(data, Mapping):
             _LOGGER.error("Local device returned a non-object JSON response")
             raise UradmonitorApiError("Local device returned an unexpected response")
-        _LOGGER.debug("Local device data received with fields: %s", sorted(data))
+        fields = sorted(data)
+        if isinstance(data.get("data"), Mapping):
+            fields = [*fields, "data." + ", data.".join(sorted(data["data"]))]
+        _LOGGER.debug("Local device data received with fields: %s", fields)
         return dict(data)
 
     async def async_get_devices(self) -> list[dict[str, Any]]:

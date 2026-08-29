@@ -76,7 +76,7 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
                 errors["base"] = "cannot_connect"
             else:
-                device_id = local_data.get("id")
+                device_id = self._local_device_id(local_data)
                 if not device_id:
                     _LOGGER.error(
                         "Local UradMonitor response did not contain a device ID"
@@ -191,3 +191,11 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         device_id = str(device["id"])
         name = device.get("note") or device.get("city") or "UradMonitor"
         return f"{name} (ID: {device_id})"
+
+    @staticmethod
+    def _local_device_id(data: dict[str, Any]) -> str | None:
+        """Extract the device ID from a local JSON response."""
+        device_id = data.get("id")
+        if device_id is None and isinstance(data.get("data"), dict):
+            device_id = data["data"].get("id")
+        return str(device_id) if device_id is not None else None

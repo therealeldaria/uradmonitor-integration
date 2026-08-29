@@ -42,3 +42,21 @@ def test_cloud_device_label_has_generic_fallback():
     assert UradmonitorConfigFlow._device_label({"id": "82000466"}) == (
         "UradMonitor (ID: 82000466)"
     )
+
+
+def test_local_device_id_is_read_from_data_object():
+    """The local JSON endpoint returns the ID inside its data object."""
+    response = {
+        "data": {
+            "id": "8200005B",
+            "type": "8",
+            "detector": "SI29BG",
+            "temperature": 26.70,
+        }
+    }
+    assert UradmonitorConfigFlow._local_device_id(response) == "8200005B"
+
+
+def test_local_device_id_supports_top_level_fallback():
+    """A top-level ID remains supported for alternate local responses."""
+    assert UradmonitorConfigFlow._local_device_id({"id": "8200005B"}) == "8200005B"
