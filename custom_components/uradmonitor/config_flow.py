@@ -18,6 +18,7 @@ from .const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
     CONF_ACCESS_MODE,
+    CONF_CLOUD_POLL_INTERVAL,
     CONF_CLOUD_USER_ID,
     CONF_CLOUD_USER_KEY,
     CONF_DETECTOR,
@@ -25,9 +26,11 @@ from .const import (
     CONF_DEVICE_TYPE,
     CONF_HARDWARE_VERSION,
     CONF_HOST,
+    CONF_LOCAL_POLL_INTERVAL,
     CONF_POLL_INTERVAL,
     CONF_PORT,
     CONF_SOFTWARE_VERSION,
+    CONF_SOURCES,
     DEFAULT_CLOUD_POLL_INTERVAL,
     DEFAULT_LOCAL_POLL_INTERVAL,
     DOMAIN,
@@ -41,7 +44,7 @@ _LOGGER = logging.getLogger(__name__)
 class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a uradmonitor config flow."""
 
-    VERSION = 1
+    VERSION = 2
 
     @staticmethod
     def async_get_options_flow(
@@ -117,13 +120,20 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 device_id = str(device_id)
                 await self.async_set_unique_id(device_id)
-                self._abort_if_unique_id_configured()
+                source = {
+                    CONF_HOST: user_input[CONF_HOST],
+                    CONF_PORT: user_input.get(CONF_PORT, 80),
+                }
+                existing = self._configured_entry(device_id)
+                if existing is not None:
+                    return self._add_source_to_existing(
+                        existing, ACCESS_MODE_LOCAL, source, metadata
+                    )
                 return self.async_create_entry(
                     title=self._device_name(device_id),
                     data={
-                        **user_input,
-                        CONF_ACCESS_MODE: ACCESS_MODE_LOCAL,
                         CONF_DEVICE_ID: device_id,
+                        CONF_SOURCES: {ACCESS_MODE_LOCAL: source},
                         **metadata,
                     },
                 )
@@ -189,14 +199,20 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
             assert self._cloud_client is not None
             await self.async_set_unique_id(str(device_id))
-            self._abort_if_unique_id_configured()
+            source = {
+                CONF_CLOUD_USER_ID: self._cloud_client.user_id,
+                CONF_CLOUD_USER_KEY: self._cloud_client.user_key,
+            }
+            existing = self._configured_entry(str(device_id))
+            if existing is not None:
+                return self._add_source_to_existing(
+                    existing, ACCESS_MODE_CLOUD, source, self._cloud_metadata(device)
+                )
             return self.async_create_entry(
                 title=self._device_name(str(device_id)),
                 data={
-                    CONF_ACCESS_MODE: ACCESS_MODE_CLOUD,
-                    CONF_CLOUD_USER_ID: self._cloud_client.user_id,
-                    CONF_CLOUD_USER_KEY: self._cloud_client.user_key,
                     CONF_DEVICE_ID: device_id,
+                    CONF_SOURCES: {ACCESS_MODE_CLOUD: source},
                     **self._cloud_metadata(device),
                 },
             )
@@ -250,6 +266,65 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             device_id = data["data"].get("id")
         return str(device_id) if device_id is not None else None
 
+    def _configured_entry(self, device_id: str) -> ConfigEntry | None:
+        """Find an existing entry for a physical device."""
+        return next(
+            (
+                entry
+                for entry in self.hass.config_entries.async_entries(DOMAIN)
+                if str(entry.unique_id or entry.data.get(CONF_DEVICE_ID)) == device_id
+            ),
+            None,
+        )
+
+    @staticmethod
+    def _entry_sources(entry: ConfigEntry) -> dict[str, dict[str, Any]]:
+        """Return source settings, including legacy entries."""
+        if entry.data.get(CONF_SOURCES):
+            return {key: dict(value) for key, value in entry.data[CONF_SOURCES].items()}
+        mode = entry.data.get(CONF_ACCESS_MODE)
+        if mode == ACCESS_MODE_LOCAL:
+            return {
+                ACCESS_MODE_LOCAL: {
+                    CONF_HOST: entry.data[CONF_HOST],
+                    CONF_PORT: entry.data.get(CONF_PORT, 80),
+                }
+            }
+        return {
+            ACCESS_MODE_CLOUD: {
+                CONF_CLOUD_USER_ID: entry.data[CONF_CLOUD_USER_ID],
+                CONF_CLOUD_USER_KEY: entry.data[CONF_CLOUD_USER_KEY],
+            }
+        }
+
+    def _add_source_to_existing(
+        self,
+        entry: ConfigEntry,
+        mode: str,
+        source: dict[str, Any],
+        metadata: dict[str, Any],
+    ) -> config_entries.FlowResult:
+        """Add a second source to an existing device entry."""
+        sources = self._entry_sources(entry)
+        if mode in sources:
+            return self.async_abort(reason="already_configured")
+        data = dict(entry.data)
+        data.pop(CONF_ACCESS_MODE, None)
+        data.pop(CONF_HOST, None)
+        data.pop(CONF_PORT, None)
+        data.pop(CONF_CLOUD_USER_ID, None)
+        data.pop(CONF_CLOUD_USER_KEY, None)
+        sources[mode] = source
+        data[CONF_SOURCES] = sources
+        for key, value in metadata.items():
+            if mode == ACCESS_MODE_LOCAL:
+                data[key] = value
+            else:
+                data.setdefault(key, value)
+        return self.async_update_reload_and_abort(
+            entry, data=data, reason="source_added"
+        )
+
 
 class UradmonitorOptionsFlow(config_entries.OptionsFlow):
     """Handle polling interval changes."""
@@ -259,48 +334,90 @@ class UradmonitorOptionsFlow(config_entries.OptionsFlow):
     ) -> config_entries.FlowResult:
         """Manage polling interval options."""
         config_entry = self.config_entry
-        default = (
-            DEFAULT_CLOUD_POLL_INTERVAL
-            if is_cloud_entry(config_entry)
-            else DEFAULT_LOCAL_POLL_INTERVAL
-        )
+        local = config_entry.data.get(CONF_SOURCES, {}).get(ACCESS_MODE_LOCAL)
+        cloud = config_entry.data.get(CONF_SOURCES, {}).get(ACCESS_MODE_CLOUD)
+        if not config_entry.data.get(CONF_SOURCES):
+            local = config_entry.data.get(CONF_ACCESS_MODE) == ACCESS_MODE_LOCAL
+            cloud = config_entry.data.get(CONF_ACCESS_MODE) == ACCESS_MODE_CLOUD
         if user_input is not None:
-            options = {CONF_POLL_INTERVAL: int(user_input[CONF_POLL_INTERVAL])}
-            if is_cloud_entry(config_entry):
+            options = dict(config_entry.options)
+            options.update(
+                {
+                    key: int(value)
+                    for key, value in user_input.items()
+                    if value is not None
+                }
+            )
+            if cloud:
                 for entry in self.hass.config_entries.async_entries(DOMAIN):
                     if (
                         entry.entry_id != config_entry.entry_id
                         and is_cloud_entry(entry)
-                        and entry.data.get(CONF_CLOUD_USER_ID)
-                        == config_entry.data.get(CONF_CLOUD_USER_ID)
-                        and entry.data.get(CONF_CLOUD_USER_KEY)
-                        == config_entry.data.get(CONF_CLOUD_USER_KEY)
+                        and self._cloud_credentials(entry)
+                        == self._cloud_credentials(config_entry)
                     ):
+                        shared_options = dict(entry.options)
+                        shared_options[CONF_CLOUD_POLL_INTERVAL] = options[
+                            CONF_CLOUD_POLL_INTERVAL
+                        ]
                         self.hass.config_entries.async_update_entry(
-                            entry, options=options
+                            entry, options=shared_options
                         )
             return self.async_create_entry(title="", data=options)
 
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_POLL_INTERVAL,
-                        default=str(
-                            config_entry.options.get(CONF_POLL_INTERVAL, default)
-                        ),
-                    ): SelectSelector(
-                        SelectSelectorConfig(
-                            options=[
-                                SelectOptionDict(
-                                    value=str(seconds),
-                                    label=f"{seconds // 60} minutes",
-                                )
-                                for seconds in POLL_INTERVAL_OPTIONS
-                            ]
+        fields = {}
+        if local:
+            fields[
+                vol.Required(
+                    CONF_LOCAL_POLL_INTERVAL,
+                    default=str(
+                        config_entry.options.get(
+                            CONF_LOCAL_POLL_INTERVAL,
+                            config_entry.options.get(
+                                CONF_POLL_INTERVAL, DEFAULT_LOCAL_POLL_INTERVAL
+                            ),
                         )
                     ),
-                }
-            ),
+                )
+            ] = self._interval_selector()
+        if cloud:
+            fields[
+                vol.Required(
+                    CONF_CLOUD_POLL_INTERVAL,
+                    default=str(
+                        config_entry.options.get(
+                            CONF_CLOUD_POLL_INTERVAL,
+                            config_entry.options.get(
+                                CONF_POLL_INTERVAL, DEFAULT_CLOUD_POLL_INTERVAL
+                            ),
+                        )
+                    ),
+                )
+            ] = self._interval_selector()
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(fields),
+        )
+
+    @staticmethod
+    def _interval_selector() -> SelectSelector:
+        """Build a polling interval selector."""
+        return SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(
+                        value=str(seconds), label=f"{seconds // 60} minutes"
+                    )
+                    for seconds in POLL_INTERVAL_OPTIONS
+                ]
+            )
+        )
+
+    @staticmethod
+    def _cloud_credentials(entry: ConfigEntry) -> tuple[str, str]:
+        """Return cloud credentials for legacy or combined entries."""
+        source = entry.data.get(CONF_SOURCES, {}).get(ACCESS_MODE_CLOUD, {})
+        return (
+            str(source.get(CONF_CLOUD_USER_ID, entry.data.get(CONF_CLOUD_USER_ID))),
+            str(source.get(CONF_CLOUD_USER_KEY, entry.data.get(CONF_CLOUD_USER_KEY))),
         )

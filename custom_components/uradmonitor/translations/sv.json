@@ -1,5 +1,9 @@
 {
   "config": {
+    "abort": {
+      "source_added": "Den extra datakällan lades till på den befintliga enheten.",
+      "already_configured": "Den här datakällan är redan konfigurerad för enheten."
+    },
     "step": {
       "user": {"title": "Anslut uradmonitor", "data": {"access_mode": "Anslutningssätt"}},
       "local": {"title": "Anslut lokal uradmonitor", "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"}},
@@ -9,7 +13,7 @@
   },
   "options": {
     "step": {
-      "init": {"title": "Pollinginställningar", "data": {"poll_interval": "Pollingintervall"}}
+      "init": {"title": "Pollinginställningar", "data": {"local_poll_interval": "Lokal pollingintervall", "cloud_poll_interval": "Molnets pollingintervall"}}
     }
   },
   "entity": {

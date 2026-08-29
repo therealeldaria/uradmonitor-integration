@@ -14,6 +14,9 @@ CONF_DETECTOR = "detector"
 CONF_HARDWARE_VERSION = "hardware_version"
 CONF_SOFTWARE_VERSION = "software_version"
 CONF_POLL_INTERVAL = "poll_interval"
+CONF_SOURCES = "sources"
+CONF_LOCAL_POLL_INTERVAL = "local_poll_interval"
+CONF_CLOUD_POLL_INTERVAL = "cloud_poll_interval"
 
 DEFAULT_LOCAL_POLL_INTERVAL = 300
 DEFAULT_CLOUD_POLL_INTERVAL = 900

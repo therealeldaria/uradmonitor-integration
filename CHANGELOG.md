@@ -2,6 +2,14 @@
 
 All notable changes will be documented here.
 
+## 2026.08.2 - Alpha
+
+- Combine local and cloud sources for the same device using its device ID.
+- Prefer local readings while using cloud data for missing sensors or fallback.
+- Preserve existing single-source configurations through automatic migration.
+- Support independent local and cloud polling intervals for combined devices.
+- Mark operational values such as voltage, signal strength, duty cycle, and uptime as diagnostic entities.
+
 ## 2026.08.1 - Alpha
 
 - Initial Home Assistant sensor entities for local and cloud uRADMonitor devices.

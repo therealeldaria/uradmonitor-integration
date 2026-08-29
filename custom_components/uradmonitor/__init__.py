@@ -12,49 +12,72 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api.client import UradmonitorApiClient
 from .const import (
+    CONF_ACCESS_MODE,
+    CONF_CLOUD_POLL_INTERVAL,
     CONF_CLOUD_USER_ID,
     CONF_CLOUD_USER_KEY,
     CONF_DETECTOR,
     CONF_DEVICE_ID,
     CONF_HARDWARE_VERSION,
+    CONF_HOST,
+    CONF_LOCAL_POLL_INTERVAL,
     CONF_POLL_INTERVAL,
+    CONF_PORT,
     CONF_SOFTWARE_VERSION,
+    CONF_SOURCES,
     DEFAULT_CLOUD_POLL_INTERVAL,
     DEFAULT_LOCAL_POLL_INTERVAL,
     DOMAIN,
     PLATFORMS,
 )
-from .coordinator import UradmonitorCoordinator, is_cloud_entry
+from .coordinator import (
+    UradmonitorCombinedCoordinator,
+    UradmonitorCoordinator,
+    has_local_source,
+    is_cloud_entry,
+)
 from .models import get_model
 
 _LOGGER = logging.getLogger(__name__)
 _COORDINATORS = "coordinators"
 _CLOUD_COORDINATORS = "cloud_coordinators"
+_SOURCE_COORDINATORS = "source_coordinators"
 
 
-def _poll_interval(entry: ConfigEntry) -> int:
+def _poll_interval(entry: ConfigEntry, *, cloud: bool) -> int:
     """Return the configured polling interval for an entry."""
-    default = (
-        DEFAULT_CLOUD_POLL_INTERVAL
-        if is_cloud_entry(entry)
-        else DEFAULT_LOCAL_POLL_INTERVAL
+    option = CONF_CLOUD_POLL_INTERVAL if cloud else CONF_LOCAL_POLL_INTERVAL
+    default = DEFAULT_CLOUD_POLL_INTERVAL if cloud else DEFAULT_LOCAL_POLL_INTERVAL
+    return int(
+        entry.options.get(option, entry.options.get(CONF_POLL_INTERVAL, default))
     )
-    return int(entry.options.get(CONF_POLL_INTERVAL, default))
 
 
 def _cloud_key(entry: ConfigEntry) -> tuple[str, str]:
     """Return the exact credentials key used for cloud sharing."""
+    cloud = entry.data.get("sources", {}).get("cloud", {})
     return (
-        str(entry.data[CONF_CLOUD_USER_ID]),
-        str(entry.data[CONF_CLOUD_USER_KEY]),
+        str(cloud.get(CONF_CLOUD_USER_ID, entry.data.get(CONF_CLOUD_USER_ID))),
+        str(cloud.get(CONF_CLOUD_USER_KEY, entry.data.get(CONF_CLOUD_USER_KEY))),
     )
 
 
 async def _async_get_coordinator(
     hass: HomeAssistant, entry: ConfigEntry
-) -> UradmonitorCoordinator:
+) -> UradmonitorCoordinator | UradmonitorCombinedCoordinator:
     """Create or reuse a coordinator for a config entry."""
     domain_data: dict[str, Any] = hass.data.setdefault(DOMAIN, {})
+    sources: dict[str, UradmonitorCoordinator] = {}
+    if has_local_source(entry):
+        client = UradmonitorApiClient(async_get_clientsession(hass))
+        sources["local"] = UradmonitorCoordinator(
+            hass,
+            entry,
+            client,
+            _poll_interval(entry, cloud=False),
+            cloud=False,
+        )
+
     if is_cloud_entry(entry):
         cloud_coordinators: dict[tuple[str, str], dict[str, Any]] = (
             domain_data.setdefault(_CLOUD_COORDINATORS, {})
@@ -71,31 +94,54 @@ async def _async_get_coordinator(
                 hass,
                 entry,
                 client,
-                _poll_interval(entry),
+                _poll_interval(entry, cloud=True),
                 cloud=True,
             )
             shared = {"coordinator": coordinator, "entries": set()}
             cloud_coordinators[key] = shared
-        coordinator = shared["coordinator"]
+        coordinator: UradmonitorCoordinator = shared["coordinator"]
         shared["entries"].add(entry.entry_id)
-        coordinator.set_update_interval(_poll_interval(entry))
-    else:
-        client = UradmonitorApiClient(async_get_clientsession(hass))
-        coordinator = UradmonitorCoordinator(
-            hass,
-            entry,
-            client,
-            _poll_interval(entry),
-            cloud=False,
-        )
-        domain_data.setdefault(_COORDINATORS, {})[entry.entry_id] = coordinator
+        coordinator.set_update_interval(_poll_interval(entry, cloud=True))
+        sources["cloud"] = coordinator
 
-    if coordinator.data is None:
-        try:
-            await coordinator.async_config_entry_first_refresh()
-        except UpdateFailed as err:
-            raise ConfigEntryNotReady(str(err)) from err
-    return coordinator
+    if not sources:
+        raise ConfigEntryNotReady("No UradMonitor source is configured")
+
+    for source in sources.values():
+        if source.data is None:
+            try:
+                if len(sources) == 1:
+                    await source.async_config_entry_first_refresh()
+                else:
+                    # A combined entry must remain usable when one transport
+                    # is temporarily unavailable. The other source can still
+                    # provide readings and the failed source will retry on its
+                    # normal coordinator schedule.
+                    await source.async_refresh()
+            except UpdateFailed as err:
+                _LOGGER.warning(
+                    "UradMonitor source unavailable during setup for %s: %s",
+                    entry.data.get(CONF_DEVICE_ID),
+                    err,
+                )
+            if not source.last_update_success:
+                _LOGGER.warning(
+                    "UradMonitor source unavailable during setup for %s: %s",
+                    entry.data.get(CONF_DEVICE_ID),
+                    source.last_exception,
+                )
+
+    if len(sources) == 1:
+        combined = next(iter(sources.values()))
+    else:
+        combined = UradmonitorCombinedCoordinator(
+            hass, entry, sources.get("local"), sources.get("cloud")
+        )
+    domain_data.setdefault(_SOURCE_COORDINATORS, {})[entry.entry_id] = sources
+    domain_data.setdefault(_COORDINATORS, {})[entry.entry_id] = combined
+    if combined.data is None or not combined.data:
+        raise ConfigEntryNotReady("No UradMonitor source returned data")
+    return combined
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -134,6 +180,45 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate legacy single-source entries to the combined format."""
+    if entry.version >= 2:
+        return True
+
+    mode = entry.data.get(CONF_ACCESS_MODE)
+    source: dict[str, Any]
+    if mode == "local":
+        source = {
+            "local": {
+                CONF_HOST: entry.data[CONF_HOST],
+                CONF_PORT: entry.data.get(CONF_PORT, 80),
+            }
+        }
+    else:
+        source = {
+            "cloud": {
+                CONF_CLOUD_USER_ID: entry.data[CONF_CLOUD_USER_ID],
+                CONF_CLOUD_USER_KEY: entry.data[CONF_CLOUD_USER_KEY],
+            }
+        }
+    data = {
+        key: value
+        for key, value in entry.data.items()
+        if key
+        not in {
+            CONF_ACCESS_MODE,
+            CONF_HOST,
+            CONF_PORT,
+            CONF_CLOUD_USER_ID,
+            CONF_CLOUD_USER_KEY,
+        }
+    }
+    data[CONF_SOURCES] = source
+    hass.config_entries.async_update_entry(entry, data=data, version=2)
+    _LOGGER.info("Migrated UradMonitor config entry %s to version 2", entry.entry_id)
+    return True
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a uradmonitor config entry."""
     _LOGGER.info("Unloading UradMonitor config entry %s", entry.entry_id)
@@ -141,6 +226,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unloaded:
         domain_data = hass.data[DOMAIN]
         coordinator = domain_data.get(_COORDINATORS, {}).pop(entry.entry_id, None)
+        sources = domain_data.get(_SOURCE_COORDINATORS, {}).pop(entry.entry_id, {})
+        if isinstance(coordinator, UradmonitorCombinedCoordinator):
+            await coordinator.async_shutdown()
         if is_cloud_entry(entry):
             key = _cloud_key(entry)
             shared = domain_data.get(_CLOUD_COORDINATORS, {}).get(key)
@@ -149,9 +237,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if not shared["entries"]:
                     await shared["coordinator"].async_shutdown()
                     domain_data[_CLOUD_COORDINATORS].pop(key, None)
-        else:
-            if coordinator is not None:
-                await coordinator.async_shutdown()
+        if "local" in sources:
+            await sources["local"].async_shutdown()
     return unloaded
 
 

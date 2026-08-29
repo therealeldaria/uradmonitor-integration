@@ -121,7 +121,11 @@ class UradmonitorSensor(CoordinatorEntity[UradmonitorCoordinator], SensorEntity)
                 value,
             )
             return None
-        if self.key == "ch2o" and not self.coordinator.cloud:
+        if (
+            self.key == "ch2o"
+            and not getattr(self.coordinator, "units_normalized", False)
+            and not self.coordinator.cloud
+        ):
             numeric_value *= 1000
         elif self.key == "cpm":
             numeric_value /= 100

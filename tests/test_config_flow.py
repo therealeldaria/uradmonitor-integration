@@ -2,9 +2,14 @@
 
 from custom_components.uradmonitor.config_flow import UradmonitorConfigFlow
 from custom_components.uradmonitor.const import (
+    ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
     CONF_ACCESS_MODE,
+    CONF_CLOUD_USER_ID,
+    CONF_CLOUD_USER_KEY,
     CONF_HOST,
+    CONF_PORT,
+    CONF_SOURCES,
     DOMAIN,
 )
 from custom_components.uradmonitor.models import get_model
@@ -78,3 +83,36 @@ def test_local_device_id_is_read_from_data_object():
 def test_local_device_id_supports_top_level_fallback():
     """A top-level ID remains supported for alternate local responses."""
     assert UradmonitorConfigFlow._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
+
+
+def test_entry_sources_supports_legacy_local_entry():
+    """Legacy local entries are readable before migration runs."""
+    from types import SimpleNamespace
+
+    entry = SimpleNamespace(
+        data={
+            CONF_ACCESS_MODE: ACCESS_MODE_LOCAL,
+            CONF_HOST: "192.0.2.10",
+            CONF_PORT: 80,
+        }
+    )
+
+    assert UradmonitorConfigFlow._entry_sources(entry) == {  # noqa: SLF001
+        ACCESS_MODE_LOCAL: {CONF_HOST: "192.0.2.10", CONF_PORT: 80}
+    }
+
+
+def test_entry_sources_reads_combined_entry():
+    """Combined entries expose both source configurations."""
+    from types import SimpleNamespace
+
+    sources = {
+        ACCESS_MODE_LOCAL: {CONF_HOST: "192.0.2.10", CONF_PORT: 80},
+        ACCESS_MODE_CLOUD: {
+            CONF_CLOUD_USER_ID: "user",
+            CONF_CLOUD_USER_KEY: "secret",
+        },
+    }
+    entry = SimpleNamespace(data={CONF_SOURCES: sources})
+
+    assert UradmonitorConfigFlow._entry_sources(entry) == sources  # noqa: SLF001

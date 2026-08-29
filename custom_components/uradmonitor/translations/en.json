@@ -1,5 +1,9 @@
 {
   "config": {
+    "abort": {
+      "source_added": "The additional data source was added to the existing device.",
+      "already_configured": "This data source is already configured for the device."
+    },
     "step": {
       "user": {
         "title": "Connect uradmonitor",
@@ -10,7 +14,7 @@
       },
       "local": {
         "title": "Connect local uradmonitor",
-        "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. No API key is required.",
+        "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. If this device is already configured through cloud access, local data will be added to the same Home Assistant device. No API key is required.",
         "data": {
           "host": "Device IP address or hostname",
           "port": "Local API port"
@@ -36,7 +40,7 @@
       },
       "cloud_device": {
         "title": "Select UradMonitor device",
-        "description": "Select the device you want to add to Home Assistant. Repeat setup to add another device.",
+        "description": "Select the device you want to add to Home Assistant. If it is already configured locally, cloud data will be added to the same Home Assistant device. Repeat setup to add another device.",
         "data": {
           "device_id": "Device"
         }
@@ -49,7 +53,8 @@
         "title": "Polling settings",
         "description": "Choose how often Home Assistant polls this device. Cloud devices using the same account share this setting.",
         "data": {
-          "poll_interval": "Polling interval"
+          "local_poll_interval": "Local polling interval",
+          "cloud_poll_interval": "Cloud polling interval"
         }
       }
     }
