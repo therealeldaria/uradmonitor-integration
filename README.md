@@ -2,6 +2,8 @@
 
 > Early development: experimental and not production-ready.
 
+> **GitHub mirror:** This repository is a read-only release mirror. All development, issues, and CI are managed in the canonical [GitLab repository](https://gitlab.com/therealeldaria/uradmonitor-integration). Please report issues and submit contributions there. GitHub releases are published from approved GitLab tags.
+
 This project is a Python Home Assistant custom integration for uRADMonitor environmental monitoring devices. It presents supported measurements as Home Assistant sensor entities for dashboards, automations, and history.
 
 This is an unofficial community integration. It is not affiliated with, sponsored by, or endorsed by uRADMonitor or its manufacturer.
@@ -60,7 +62,7 @@ icon.png                         Repository icon
 
 ## HACS and hosting
 
-Development, issues, and CI are hosted in GitLab. The public GitHub repository is the release mirror used for HACS distribution. Install the integration through HACS after the GitHub mirror and release are available; until then, use a local custom-component checkout.
+Development, issues, and CI are hosted in GitLab. The public GitHub repository is the release mirror used for HACS distribution. Install the integration through HACS from the GitHub mirror; for development, use the canonical GitLab repository.
 
 Approved GitLab release tags are mirrored to GitHub by GitLab CI, which also creates the corresponding GitHub release.
 
