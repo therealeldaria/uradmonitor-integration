@@ -58,9 +58,23 @@ icon.svg                         Source vector icon
 icon.png                         Repository icon
 ```
 
-## HACS and hosting
+## Install with HACS
 
-Development, issues, and CI are hosted in GitLab. The public GitHub repository is the release mirror used for HACS distribution. Install the integration through HACS from the GitHub mirror; for development, use the canonical GitLab repository.
+The repository is public on GitHub, but it is not yet part of the HACS default repository list. Add it as a custom repository:
+
+1. Open **HACS** in Home Assistant.
+2. Open the three-dot menu in the upper-right corner.
+3. Select **Custom repositories**.
+4. Enter `https://github.com/therealeldaria/uradmonitor-integration`.
+5. Select **Integration** as the repository type.
+6. Click **Add**, open the repository in HACS, and choose **Download**.
+7. Restart Home Assistant.
+
+You can also use this [My Home Assistant link](https://my.home-assistant.io/redirect/hacs_repository/?owner=therealeldaria&repository=uradmonitor-integration&category=integration) to open the repository in HACS. The link may still require the repository to be added as a custom repository.
+
+After installation, add **UradMonitor** from **Settings → Devices & services → Add Integration**. HACS will use the GitHub releases for updates.
+
+Development, issues, and CI are hosted in GitLab. The public GitHub repository is the release mirror used for HACS distribution. For development, use the canonical GitLab repository.
 
 Approved GitLab release tags are mirrored to GitHub by GitLab CI, which also creates the corresponding GitHub release.
 

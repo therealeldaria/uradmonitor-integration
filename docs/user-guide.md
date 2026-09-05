@@ -6,9 +6,31 @@ This is an unofficial community integration. It is not affiliated with, sponsore
 
 ## Installation
 
-The primary installation method is HACS through the public GitHub release mirror. For development or before the mirror is available, install it manually by copying or linking `custom_components/uradmonitor/` into the `custom_components/` directory of Home Assistant.
+### HACS installation
+
+The public GitHub repository is currently distributed through HACS as a **custom repository**. It is not yet in the HACS default repository list.
+
+1. Open **HACS** in Home Assistant.
+2. Open the three-dot menu in the upper-right corner.
+3. Select **Custom repositories**.
+4. Enter:
+
+   `https://github.com/therealeldaria/uradmonitor-integration`
+
+5. Select **Integration** as the repository type.
+6. Click **Add**.
+7. Open **uradmonitor Home Assistant Integration** in HACS and click **Download**.
+8. Restart Home Assistant.
+
+You can use the [direct My Home Assistant HACS link](https://my.home-assistant.io/redirect/hacs_repository/?owner=therealeldaria&repository=uradmonitor-integration&category=integration) to open the repository. If HACS has not seen the repository before, add it as a custom repository first.
+
+HACS tracks the GitHub release mirror. Future releases can be installed from the repository's HACS page using **Update**.
+
+For development or before the GitHub mirror is available, install it manually by copying or linking `custom_components/uradmonitor/` into the `custom_components/` directory of Home Assistant.
 
 Restart Home Assistant after installing or updating the integration.
+
+The official HACS instructions for custom repositories are available in the [HACS documentation](https://www.hacs.xyz/docs/faq/custom_repositories/).
 
 ## Add a device
 
