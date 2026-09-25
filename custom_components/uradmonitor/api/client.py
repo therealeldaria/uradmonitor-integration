@@ -9,7 +9,7 @@ from typing import Any
 
 from aiohttp import ClientError, ClientSession
 
-from .local_templates import get_local_status_template
+from .local_templates import LocalStatusTemplate
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,18 +60,21 @@ class UradmonitorApiClient:
         return dict(data)
 
     async def async_get_local_metadata(
-        self, host: str, port: int = 80, device_type: str | None = None
+        self,
+        host: str,
+        port: int = 80,
+        template: LocalStatusTemplate | None = None,
     ) -> dict[str, str]:
         """Fetch hardware and software metadata from the local status page."""
         return await self._async_get_local_status(
-            host, port, metadata_only=True, device_type=device_type
+            host, port, metadata_only=True, template=template
         )
 
     async def async_get_local_status_data(
         self, host: str, port: int = 80
     ) -> dict[str, Any]:
-        """Fetch current readings and metadata from the local status page."""
-        return await self._async_get_local_status(host, port, metadata_only=False)
+        """Reject HTML sensor polling; local sensors come from /j."""
+        raise UradmonitorApiError("Local sensor data is available from /j only")
 
     async def _async_get_local_status(
         self,
@@ -79,7 +82,7 @@ class UradmonitorApiClient:
         port: int,
         *,
         metadata_only: bool,
-        device_type: str | None = None,
+        template: LocalStatusTemplate | None = None,
     ) -> dict[str, Any]:
         """Fetch and parse the single-request local status page."""
         url = f"http://{host}:{port}/"
@@ -95,21 +98,15 @@ class UradmonitorApiClient:
             )
             raise UradmonitorApiError("Unable to fetch local device status") from err
 
-        template = get_local_status_template(device_type)
         if template is None:
-            raise UradmonitorApiError(
-                f"No local status template for device type {device_type!r}"
-            )
-        metadata, values = template.parse(page)
-        if metadata_only:
-            _LOGGER.debug(
-                "Local device metadata received with fields: %s", sorted(metadata)
-            )
-            return metadata
-
-        if not metadata.get("device_id") or not values:
-            raise UradmonitorApiError("Local device status did not contain readings")
-        return {**metadata, **values}
+            raise UradmonitorApiError("No local status metadata template selected")
+        if not metadata_only:
+            raise UradmonitorApiError("Local status data is metadata-only")
+        metadata = template.parse_metadata(page)
+        _LOGGER.debug(
+            "Local device metadata received with fields: %s", sorted(metadata)
+        )
+        return metadata
 
     @staticmethod
     def _fetch_local_page(host: str, port: int, path: str) -> tuple[str, str]:

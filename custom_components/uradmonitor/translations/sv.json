@@ -5,10 +5,20 @@
       "already_configured": "Den här datakällan är redan konfigurerad för enheten."
     },
     "step": {
-      "user": {"title": "Anslut uradmonitor", "data": {"access_mode": "Anslutningssätt"}},
-      "local": {"title": "Anslut lokal uradmonitor", "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"}},
+      "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API.", "data": {"access_mode": "Anslutningssätt"}},
+      "local": {
+        "title": "Anslut lokal uradmonitor (2026.09.1)",
+        "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet.",
+        "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"},
+        "data_description": {"port": "Det lokala API:et använder normalt port 80."}
+      },
       "cloud": {"title": "Anslut uradmonitor-molnet", "data": {"cloud_user_id": "Användar-ID", "cloud_user_key": "Användarnyckel"}},
       "cloud_device": {"title": "Välj uradmonitor-enhet", "data": {"device_id": "Enhet"}}
+    },
+    "error": {
+      "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
+      "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
+      "unsupported_device": "Den här enhetstypen stöds inte ännu. Lägg gärna upp svaren från http://{host}/j och http://{host}/ i [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues). Ta bort publika IP-adresser eller annan känslig information vid behov."
     }
   },
   "options": {

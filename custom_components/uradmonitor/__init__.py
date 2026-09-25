@@ -10,14 +10,17 @@ from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from .api.client import UradmonitorApiClient
+from .api.client import UradmonitorApiClient, UradmonitorApiError
+from .api.local_templates import device_name, get_local_device_definition
 from .const import (
+    ACCESS_MODE_LOCAL,
     CONF_ACCESS_MODE,
     CONF_CLOUD_POLL_INTERVAL,
     CONF_CLOUD_USER_ID,
     CONF_CLOUD_USER_KEY,
     CONF_DETECTOR,
     CONF_DEVICE_ID,
+    CONF_DEVICE_TYPE,
     CONF_HARDWARE_VERSION,
     CONF_HOST,
     CONF_LOCAL_POLL_INTERVAL,
@@ -130,6 +133,37 @@ async def _async_get_coordinators(
     return sources
 
 
+async def _async_refresh_local_metadata(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> None:
+    """Refresh static HTML metadata once when a local entry starts."""
+    if not has_local_source(entry):
+        return
+    definition = get_local_device_definition(entry.data.get(CONF_DEVICE_TYPE))
+    if definition is None:
+        return
+    source = entry.data.get(CONF_SOURCES, {}).get(ACCESS_MODE_LOCAL, {})
+    client = UradmonitorApiClient(async_get_clientsession(hass))
+    try:
+        metadata = await client.async_get_local_metadata(
+            source.get(CONF_HOST, entry.data.get(CONF_HOST)),
+            source.get(CONF_PORT, entry.data.get(CONF_PORT, 80)),
+            definition.metadata_template,
+        )
+    except UradmonitorApiError as err:
+        _LOGGER.debug("Unable to refresh optional local metadata: %s", err)
+        return
+    changed = {
+        key: value
+        for key, value in metadata.items()
+        if entry.data.get(key) != value
+    }
+    if changed:
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, **changed}
+        )
+
+
 def _source_identifier(device_id: str, source: str) -> str:
     """Return the Home Assistant identifier for one transport."""
     return f"{device_id}_{source}"
@@ -147,9 +181,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
 
     device_registry = dr.async_get(hass)
+    await _async_refresh_local_metadata(hass, entry)
     coordinators = await _async_get_coordinators(hass, entry)
     detector = entry.data.get(CONF_DETECTOR)
-    model = get_model(detector, entry.data.get(CONF_HARDWARE_VERSION))
+    definition = get_local_device_definition(entry.data.get(CONF_DEVICE_TYPE))
+    model = (
+        device_name(definition, entry.data.get(CONF_HARDWARE_VERSION))
+        if definition
+        else get_model(detector, entry.data.get(CONF_HARDWARE_VERSION))
+    )
     if detector:
         model = f"{model} ({detector})"
     for source in coordinators:

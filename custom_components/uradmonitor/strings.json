@@ -6,14 +6,14 @@
     },
     "step": {
       "user": {
-        "title": "Connect uradmonitor",
+        "title": "Connect uradmonitor (2026.09.1)",
         "description": "Choose how Home Assistant should connect to this UradMonitor device. Local access reads data directly from the device. Cloud access uses the UradMonitor REST API.",
         "data": {
           "access_mode": "Access mode"
         }
       },
       "local": {
-        "title": "Connect local uradmonitor",
+        "title": "Connect local uradmonitor (2026.09.1)",
         "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. If this device is already configured through cloud access, local data will be added to the same Home Assistant device. No API key is required.",
         "data": {
           "host": "Device IP address or hostname",
@@ -21,11 +21,6 @@
         },
         "data_description": {
           "port": "The local API normally uses port 80. Change this only if your device uses another port."
-        },
-        "error": {
-          "cannot_connect": "Unable to connect to the local device. Check the host and port.",
-          "invalid_response": "The local device did not return a valid device ID.",
-          "unsupported_device": "This device type is not supported yet. Please submit an issue with the complete /j response and the HTML returned by /. Redact public IP addresses or other sensitive information if needed."
         }
       },
       "cloud": {
@@ -46,6 +41,11 @@
           "device_id": "Device"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the local device. Check the host and port.",
+      "invalid_response": "The local device did not return a valid device ID.",
+      "unsupported_device": "This device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed."
     }
   },
   "options": {

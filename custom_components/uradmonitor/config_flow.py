@@ -14,7 +14,11 @@ from homeassistant.helpers.selector import (
 )
 
 from .api.client import UradmonitorApiClient, UradmonitorApiError
-from .api.local_templates import get_local_status_template
+from .api.local_templates import (
+    device_name,
+    get_local_device_definition,
+    local_json_metadata,
+)
 from .const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -98,24 +102,27 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self._show_local_form(user_input, "cannot_connect")
 
             device_type = self._local_device_type(local_data)
-            if local_data and get_local_status_template(device_type) is None:
+            definition = get_local_device_definition(device_type)
+            if definition is None:
                 _LOGGER.error(
                     "Unsupported local UradMonitor device type %s at %s:%s",
                     device_type,
                     user_input[CONF_HOST],
                     user_input.get(CONF_PORT, 80),
                 )
-                errors["base"] = "unsupported_device"
-                metadata = {}
-            elif not local_data:
+                errors["base"] = self._unsupported_device_error(
+                    user_input[CONF_HOST]
+                )
                 metadata = {}
             else:
+                metadata = local_json_metadata(local_data)
                 try:
                     metadata = await client.async_get_local_metadata(
                         user_input[CONF_HOST],
                         user_input.get(CONF_PORT, 80),
-                        device_type,
+                        definition.metadata_template,
                     )
+                    metadata = {**local_json_metadata(local_data), **metadata}
                 except UradmonitorApiError:
                     _LOGGER.warning(
                         "Unable to retrieve optional metadata from local "
@@ -123,11 +130,9 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         user_input[CONF_HOST],
                         user_input.get(CONF_PORT, 80),
                     )
-                    metadata = {}
+                    metadata = local_json_metadata(local_data)
 
             device_id = self._local_device_id(local_data) if local_data else None
-            if not device_id:
-                device_id = metadata.get(CONF_DEVICE_ID)
 
             if not device_id and not errors:
                 _LOGGER.error("Local UradMonitor response did not contain a device ID")
@@ -145,7 +150,9 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         existing, ACCESS_MODE_LOCAL, source, metadata
                     )
                 return self.async_create_entry(
-                    title=self._device_name(device_id),
+                    title=device_name(
+                        definition, metadata.get(CONF_HARDWARE_VERSION)
+                    ),
                     data={
                         CONF_DEVICE_ID: device_id,
                         CONF_SOURCES: {ACCESS_MODE_LOCAL: source},
@@ -168,6 +175,22 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors={"base": error} if error else {},
+        )
+
+    def _unsupported_device_error(self, host: str) -> str:
+        """Return actionable plain-text guidance for an unknown device type."""
+        if self.hass.config.language == "sv":
+            return (
+                "Den här enhetstypen stöds inte ännu. Lägg gärna upp svaren från "
+                f"http://{host}/j och http://{host}/ i GitHub-ärendehanteringen: "
+                "https://github.com/therealeldaria/uradmonitor-integration/issues. "
+                "Ta bort publika IP-adresser eller annan känslig information vid behov."
+            )
+        return (
+            "This device type is not supported yet. Please submit the responses "
+            f"from http://{host}/j and http://{host}/ to the GitHub issue tracker: "
+            "https://github.com/therealeldaria/uradmonitor-integration/issues. "
+            "Redact public IP addresses or other sensitive information if needed."
         )
 
     async def async_step_cloud(
