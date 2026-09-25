@@ -2,7 +2,8 @@
   "config": {
     "abort": {
       "source_added": "Den extra datakällan lades till på den befintliga enheten.",
-      "already_configured": "Den här datakällan är redan konfigurerad för enheten."
+      "already_configured": "Den här datakällan är redan konfigurerad för enheten.",
+      "not_uradmonitor": "Den upptäckta HTTP-tjänsten är inte en UradMonitor-enhet."
     },
     "step": {
       "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API.", "data": {"access_mode": "Anslutningssätt"}},

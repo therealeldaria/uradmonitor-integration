@@ -14,6 +14,10 @@ from custom_components.uradmonitor.const import (
 )
 from custom_components.uradmonitor.flows.cloud import CloudConfigFlowMixin
 from custom_components.uradmonitor.flows.common import entry_sources
+from custom_components.uradmonitor.flows.discovery import (
+    discovered_local_source,
+    is_uradmonitor_service,
+)
 from custom_components.uradmonitor.flows.local import LocalConfigFlowMixin
 from custom_components.uradmonitor.models import (
     device_name,
@@ -87,6 +91,29 @@ def test_local_device_type_is_read_from_data_object():
 def test_local_device_type_supports_top_level_fallback():
     """Alternate local responses may put type at the top level."""
     assert LocalConfigFlowMixin._local_device_type({"type": "8"}) == "8"
+
+
+def test_zeroconf_identifies_uradmonitor_http_service():
+    """The device's mDNS service name identifies it as an UradMonitor."""
+    from types import SimpleNamespace
+
+    info = SimpleNamespace(
+        name="uRADMonitor-36._http._tcp.local.",
+        ip_address="192.168.30.7",
+        port=80,
+    )
+
+    assert is_uradmonitor_service(info)
+    assert discovered_local_source(info) == {CONF_HOST: "192.168.30.7", CONF_PORT: 80}
+
+
+def test_zeroconf_ignores_other_http_services():
+    """Other HTTP services must not start the UradMonitor flow."""
+    from types import SimpleNamespace
+
+    assert not is_uradmonitor_service(
+        SimpleNamespace(name="printer._http._tcp.local.")
+    )
 
 
 def test_device_type_selects_a_named_definition_and_reusable_template():

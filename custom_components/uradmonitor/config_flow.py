@@ -8,11 +8,13 @@ from homeassistant.config_entries import ConfigEntry
 
 from .const import ACCESS_MODE_CLOUD, ACCESS_MODE_LOCAL, CONF_ACCESS_MODE, DOMAIN
 from .flows.cloud import CloudConfigFlowMixin
+from .flows.discovery import DiscoveryConfigFlowMixin
 from .flows.local import LocalConfigFlowMixin
 from .flows.options import UradmonitorOptionsFlow
 
 
 class UradmonitorConfigFlow(
+    DiscoveryConfigFlowMixin,
     LocalConfigFlowMixin,
     CloudConfigFlowMixin,
     config_entries.ConfigFlow,
