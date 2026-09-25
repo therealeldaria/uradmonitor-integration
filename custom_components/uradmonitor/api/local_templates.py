@@ -7,7 +7,6 @@ from typing import Any
 
 from ..const import (
     CONF_DETECTOR,
-    CONF_DEVICE_TYPE,
     CONF_HARDWARE_VERSION,
     CONF_SOFTWARE_VERSION,
 )
@@ -34,14 +33,13 @@ class LocalDeviceDefinition:
 def _parse_legacy_a3_metadata(page: str) -> Metadata:
     """Parse metadata from the compact status page used by the original A3."""
     metadata_match = re.search(
-        r"type:(?P<type>\S+)\s+hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+"
+        r"(?:type:\S+\s+)?hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+"
         r"(?P<detector>[^<\s]+)",
         page,
     )
     if not metadata_match:
         return {}
     return {
-        CONF_DEVICE_TYPE: metadata_match.group("type"),
         CONF_HARDWARE_VERSION: metadata_match.group("hw"),
         CONF_SOFTWARE_VERSION: metadata_match.group("sw"),
         CONF_DETECTOR: metadata_match.group("detector"),

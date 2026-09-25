@@ -116,7 +116,6 @@ def test_metadata_template_does_not_extract_sensor_values_or_identity():
         "<hr>radiation:9CPM<br>temperature:19.73C"
     )
     assert metadata == {
-        "device_type": "8",
         "hardware_version": "104",
         "software_version": "124",
         "detector": "SI29BG",
