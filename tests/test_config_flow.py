@@ -95,11 +95,12 @@ def test_local_device_type_supports_top_level_fallback():
 
 def test_zeroconf_identifies_uradmonitor_http_service():
     """The device's mDNS service name identifies it as an UradMonitor."""
+    from ipaddress import IPv4Address
     from types import SimpleNamespace
 
     info = SimpleNamespace(
         name="uRADMonitor-36._http._tcp.local.",
-        ip_address="192.168.30.7",
+        ip_address=IPv4Address("192.168.30.7"),
         port=80,
     )
 

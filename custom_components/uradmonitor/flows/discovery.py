@@ -27,7 +27,7 @@ def discovered_local_source(discovery_info: ZeroconfServiceInfo) -> dict[str, An
     if not host:
         host = str(getattr(discovery_info, "host", "")).rstrip(".")
     return {
-        CONF_HOST: host,
+        CONF_HOST: str(host),
         CONF_PORT: int(getattr(discovery_info, "port", 80) or 80),
     }
 
