@@ -23,16 +23,8 @@ class LocalStatusTemplate:
     parse_metadata: Callable[[str], Metadata]
 
 
-@dataclass(frozen=True)
-class LocalDeviceDefinition:
-    """Definition selected by the device type reported by ``/j``."""
-
-    name: str
-    metadata_template: LocalStatusTemplate
-
-
-def _parse_legacy_a3_metadata(page: str) -> Metadata:
-    """Parse metadata from the compact status page used by the original A3."""
+def _parse_a3_2016_metadata(page: str) -> Metadata:
+    """Parse metadata from the compact A3 status page used since 2016."""
     metadata_match = re.search(
         r"(?:type:\S+\s+)?hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+"
         r"(?P<detector>[^<\s]+)",
@@ -47,23 +39,9 @@ def _parse_legacy_a3_metadata(page: str) -> Metadata:
     }
 
 
-LEGACY_A3_TEMPLATE = LocalStatusTemplate(
-    "legacy_a3_metadata", _parse_legacy_a3_metadata
+A3_2016_TEMPLATE = LocalStatusTemplate(
+    "a3_2016_metadata", _parse_a3_2016_metadata
 )
-
-
-# This is the device-type translation table. Multiple type values may point to
-# the same definition and therefore reuse the same HTML metadata template.
-LOCAL_DEVICE_TYPES: dict[str, LocalDeviceDefinition] = {
-    "8": LocalDeviceDefinition("A3", LEGACY_A3_TEMPLATE),
-}
-
-
-def get_local_device_definition(device_type: Any) -> LocalDeviceDefinition | None:
-    """Return the device definition for a type reported by /j."""
-    if device_type is None:
-        return None
-    return LOCAL_DEVICE_TYPES.get(str(device_type).strip())
 
 
 def local_json_metadata(data: Mapping[str, Any]) -> Metadata:
@@ -86,9 +64,3 @@ def local_json_metadata(data: Mapping[str, Any]) -> Metadata:
         if value is not None:
             metadata[key] = str(value)
     return metadata
-
-
-def device_name(definition: LocalDeviceDefinition, hardware_version: Any) -> str:
-    """Return the user-facing model name, such as ``A3-104``."""
-    hardware = str(hardware_version).strip() if hardware_version else "unknown"
-    return f"{definition.name}-{hardware}"

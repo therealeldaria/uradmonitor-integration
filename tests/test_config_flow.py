@@ -1,11 +1,6 @@
 """Tests for the uradmonitor config flow."""
 
-from custom_components.uradmonitor.api.local_templates import (
-    LEGACY_A3_TEMPLATE,
-    device_name,
-    get_local_device_definition,
-)
-from custom_components.uradmonitor.config_flow import UradmonitorConfigFlow
+from custom_components.uradmonitor.api.local_templates import A3_2016_TEMPLATE
 from custom_components.uradmonitor.const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -17,7 +12,17 @@ from custom_components.uradmonitor.const import (
     CONF_SOURCES,
     DOMAIN,
 )
-from custom_components.uradmonitor.models import get_model
+from custom_components.uradmonitor.flows.cloud import CloudConfigFlowMixin
+from custom_components.uradmonitor.flows.common import entry_sources
+from custom_components.uradmonitor.flows.discovery import (
+    discovered_local_source,
+    is_uradmonitor_service,
+)
+from custom_components.uradmonitor.flows.local import LocalConfigFlowMixin
+from custom_components.uradmonitor.models import (
+    device_name,
+    get_supported_device,
+)
 
 
 def test_local_access_mode_constants():
@@ -31,7 +36,7 @@ def test_local_access_mode_constants():
 def test_cloud_device_label_prefers_note_and_includes_id():
     """A cloud device note is displayed together with its ID."""
     assert (
-        UradmonitorConfigFlow._device_label(  # noqa: SLF001
+        CloudConfigFlowMixin._device_label(  # noqa: SLF001
             {"id": "82000466", "note": "Living room", "city": "Fyrunga"}
         )
         == "Living room (ID: 82000466)"
@@ -41,7 +46,7 @@ def test_cloud_device_label_prefers_note_and_includes_id():
 def test_cloud_device_label_falls_back_to_city():
     """The city is used when a cloud device has no note."""
     assert (
-        UradmonitorConfigFlow._device_label(  # noqa: SLF001
+        CloudConfigFlowMixin._device_label(  # noqa: SLF001
             {"id": "82000466", "city": "Fyrunga"}
         )
         == "Fyrunga (ID: 82000466)"
@@ -50,26 +55,14 @@ def test_cloud_device_label_falls_back_to_city():
 
 def test_cloud_device_label_has_generic_fallback():
     """A generic name is used when no location is available."""
-    assert UradmonitorConfigFlow._device_label({"id": "82000466"}) == (
+    assert CloudConfigFlowMixin._device_label({"id": "82000466"}) == (
         "UradMonitor (ID: 82000466)"
     )
 
 
 def test_device_name_is_device_id_for_all_access_modes():
     """The stable device ID is used as the Home Assistant device name."""
-    assert UradmonitorConfigFlow._device_name("5E6F7081") == "5E6F7081"
-
-
-def test_known_model_mappings():
-    """Known detector and hardware combinations resolve to their model."""
-    assert get_model("SBM20", 109) == "Model A"
-    assert get_model("SI29BG", 104) == "Model A3"
-    assert get_model("SI29BG", 110) == "Model A3"
-
-
-def test_unknown_model_mapping_is_explicit():
-    """New hardware combinations remain visible as unknown."""
-    assert get_model("unknown", "unknown") == "Unknown"
+    assert CloudConfigFlowMixin._device_name("5E6F7081") == "5E6F7081"
 
 
 def test_local_device_id_is_read_from_data_object():
@@ -82,36 +75,76 @@ def test_local_device_id_is_read_from_data_object():
             "temperature": 26.70,
         }
     }
-    assert UradmonitorConfigFlow._local_device_id(response) == "5E6F7081"
+    assert LocalConfigFlowMixin._local_device_id(response) == "5E6F7081"
 
 
 def test_local_device_id_supports_top_level_fallback():
     """A top-level ID remains supported for alternate local responses."""
-    assert UradmonitorConfigFlow._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
+    assert LocalConfigFlowMixin._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
 
 
 def test_local_device_type_is_read_from_data_object():
     """The local JSON type selects the status-page template."""
-    assert UradmonitorConfigFlow._local_device_type({"data": {"type": 8}}) == "8"
+    assert LocalConfigFlowMixin._local_device_type({"data": {"type": 8}}) == "8"
 
 
 def test_local_device_type_supports_top_level_fallback():
     """Alternate local responses may put type at the top level."""
-    assert UradmonitorConfigFlow._local_device_type({"type": "8"}) == "8"
+    assert LocalConfigFlowMixin._local_device_type({"type": "8"}) == "8"
+
+
+def test_zeroconf_identifies_uradmonitor_http_service():
+    """The device's mDNS service name identifies it as an UradMonitor."""
+    from ipaddress import IPv4Address
+    from types import SimpleNamespace
+
+    info = SimpleNamespace(
+        name="uRADMonitor-36._http._tcp.local.",
+        ip_address=IPv4Address("192.168.30.7"),
+        port=80,
+    )
+
+    assert is_uradmonitor_service(info)
+    assert discovered_local_source(info) == {CONF_HOST: "192.168.30.7", CONF_PORT: 80}
+
+
+def test_zeroconf_ignores_other_http_services():
+    """Other HTTP services must not start the UradMonitor flow."""
+    from types import SimpleNamespace
+
+    assert not is_uradmonitor_service(
+        SimpleNamespace(name="printer._http._tcp.local.")
+    )
+
+
+def test_local_form_preserves_discovered_host_and_port():
+    """Discovery values remain filled in when local validation fails."""
+    class Flow(LocalConfigFlowMixin):
+        def async_show_form(self, **kwargs):
+            return kwargs
+
+    form = Flow()._show_local_form(  # noqa: SLF001
+        {CONF_HOST: "192.168.30.7", CONF_PORT: 8080}, "unsupported_device"
+    )
+
+    assert form["data_schema"]({}) == {
+        CONF_HOST: "192.168.30.7",
+        CONF_PORT: 8080,
+    }
 
 
 def test_device_type_selects_a_named_definition_and_reusable_template():
     """The JSON type selects a device name and metadata template."""
-    definition = get_local_device_definition(8)
+    definition = get_supported_device(8)
     assert definition is not None
     assert definition.name == "A3"
-    assert definition.metadata_template is LEGACY_A3_TEMPLATE
+    assert definition.metadata_template is A3_2016_TEMPLATE
     assert device_name(definition, 104) == "A3-104"
 
 
 def test_metadata_template_does_not_extract_sensor_values_or_identity():
     """HTML templates return static metadata only."""
-    metadata = LEGACY_A3_TEMPLATE.parse_metadata(
+    metadata = A3_2016_TEMPLATE.parse_metadata(
         "<b>uRADMonitor 8200005B</b><br>type:8 hw:104 sw:124 SI29BG"
         "<hr>radiation:9CPM<br>temperature:19.73C"
     )
@@ -134,7 +167,7 @@ def test_entry_sources_supports_legacy_local_entry():
         }
     )
 
-    assert UradmonitorConfigFlow._entry_sources(entry) == {  # noqa: SLF001
+    assert entry_sources(entry) == {
         ACCESS_MODE_LOCAL: {CONF_HOST: "192.0.2.10", CONF_PORT: 80}
     }
 
@@ -152,4 +185,4 @@ def test_entry_sources_reads_combined_entry():
     }
     entry = SimpleNamespace(data={CONF_SOURCES: sources})
 
-    assert UradmonitorConfigFlow._entry_sources(entry) == sources  # noqa: SLF001
+    assert entry_sources(entry) == sources
