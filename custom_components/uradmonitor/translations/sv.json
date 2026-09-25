@@ -8,7 +8,7 @@
       "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API. Integrationsversion: 2026.09.1.", "data": {"access_mode": "Anslutningssätt"}},
       "local": {
         "title": "Anslut lokal uradmonitor (2026.09.1)",
-        "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet.",
+        "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet. För enheter som inte stöds, skicka svaren från http://{host}/j och http://{host}/ till [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues).",
         "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"},
         "data_description": {"port": "Det lokala API:et använder normalt port 80."}
       },
@@ -18,7 +18,7 @@
     "error": {
       "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
       "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
-      "unsupported_device": "Den här enhetstypen stöds inte ännu. Skicka gärna ett ärende med det fullständiga svaret från /j och HTML-svaret från /. Ta bort publika IP-adresser eller annan känslig information vid behov."
+      "unsupported_device": "Den här enhetstypen stöds inte ännu. Lägg gärna upp ett ärende i [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues) med de fullständiga svaren från /j och /. Ta bort publika IP-adresser eller annan känslig information vid behov."
     }
   },
   "options": {

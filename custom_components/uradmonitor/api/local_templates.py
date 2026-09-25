@@ -7,6 +7,7 @@ from typing import Any
 
 from ..const import (
     CONF_DETECTOR,
+    CONF_DEVICE_TYPE,
     CONF_HARDWARE_VERSION,
     CONF_SOFTWARE_VERSION,
 )

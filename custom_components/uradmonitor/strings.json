@@ -14,7 +14,7 @@
       },
       "local": {
         "title": "Connect local uradmonitor (2026.09.1)",
-        "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. If this device is already configured through cloud access, local data will be added to the same Home Assistant device. No API key is required.",
+        "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. If this device is already configured through cloud access, local data will be added to the same Home Assistant device. No API key is required. For unsupported devices, submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues).",
         "data": {
           "host": "Device IP address or hostname",
           "port": "Local API port"
@@ -45,7 +45,7 @@
     "error": {
       "cannot_connect": "Unable to connect to the local device. Check the host and port.",
       "invalid_response": "The local device did not return a valid device ID.",
-      "unsupported_device": "This device type is not supported yet. Please submit an issue with the complete /j response and the HTML returned by /. Redact public IP addresses or other sensitive information if needed."
+      "unsupported_device": "This device type is not supported yet. Please submit an issue to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues) with the complete responses from /j and /. Redact public IP addresses or other sensitive information if needed."
     }
   },
   "options": {

@@ -173,6 +173,11 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors={"base": error} if error else {},
+            description_placeholders={
+                "host": str(user_input.get(CONF_HOST, "<device-host>")
+                if user_input
+                else "<device-host>")
+            },
         )
 
     async def async_step_cloud(
