@@ -14,6 +14,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .api.client import UradmonitorApiClient, UradmonitorApiError
+from .api.local_templates import get_local_status_template
 from .const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -84,40 +85,54 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             client = UradmonitorApiClient(async_get_clientsession(self.hass))
             try:
-                metadata = await client.async_get_local_metadata(
+                local_data = await client.async_get_local_data(
                     user_input[CONF_HOST], user_input.get(CONF_PORT, 80)
                 )
             except UradmonitorApiError:
                 _LOGGER.warning(
-                    "Unable to retrieve optional metadata from local "
+                    "Unable to retrieve local JSON data from "
                     "UradMonitor at %s:%s",
                     user_input[CONF_HOST],
                     user_input.get(CONF_PORT, 80),
-                    exc_info=True,
                 )
-                metadata = {}
+                return self._show_local_form(user_input, "cannot_connect")
 
-            device_id = metadata.get(CONF_DEVICE_ID)
-            if not device_id:
+            device_type = self._local_device_type(local_data)
+            if local_data and get_local_status_template(device_type) is None:
+                _LOGGER.error(
+                    "Unsupported local UradMonitor device type %s at %s:%s",
+                    device_type,
+                    user_input[CONF_HOST],
+                    user_input.get(CONF_PORT, 80),
+                )
+                errors["base"] = "unsupported_device"
+                metadata = {}
+            elif not local_data:
+                metadata = {}
+            else:
                 try:
-                    local_data = await client.async_get_local_data(
-                        user_input[CONF_HOST], user_input.get(CONF_PORT, 80)
-                    )
-                except UradmonitorApiError:
-                    _LOGGER.error(
-                        "Unable to validate local UradMonitor at %s:%s",
+                    metadata = await client.async_get_local_metadata(
                         user_input[CONF_HOST],
                         user_input.get(CONF_PORT, 80),
-                        exc_info=True,
+                        device_type,
                     )
-                    errors["base"] = "cannot_connect"
-                else:
-                    device_id = self._local_device_id(local_data)
+                except UradmonitorApiError:
+                    _LOGGER.warning(
+                        "Unable to retrieve optional metadata from local "
+                        "UradMonitor at %s:%s",
+                        user_input[CONF_HOST],
+                        user_input.get(CONF_PORT, 80),
+                    )
+                    metadata = {}
 
+            device_id = self._local_device_id(local_data) if local_data else None
             if not device_id:
+                device_id = metadata.get(CONF_DEVICE_ID)
+
+            if not device_id and not errors:
                 _LOGGER.error("Local UradMonitor response did not contain a device ID")
                 errors["base"] = "invalid_response"
-            else:
+            elif device_id and not errors:
                 device_id = str(device_id)
                 await self.async_set_unique_id(device_id)
                 source = {
@@ -138,6 +153,12 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     },
                 )
 
+        return self._show_local_form(user_input, errors.get("base"))
+
+    def _show_local_form(
+        self, user_input: dict[str, Any] | None, error: str | None = None
+    ) -> config_entries.FlowResult:
+        """Show the local form with an error that Home Assistant can translate."""
         return self.async_show_form(
             step_id="local",
             data_schema=vol.Schema(
@@ -146,7 +167,7 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_PORT, default=80): vol.Coerce(int),
                 }
             ),
-            errors=errors,
+            errors={"base": error} if error else {},
         )
 
     async def async_step_cloud(
@@ -265,6 +286,15 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if device_id is None and isinstance(data.get("data"), dict):
             device_id = data["data"].get("id")
         return str(device_id) if device_id is not None else None
+
+    @staticmethod
+    def _local_device_type(data: dict[str, Any]) -> str | None:
+        """Extract the device type used to select a local status template."""
+        if isinstance(data.get("data"), dict):
+            device_type = data["data"].get("type")
+        else:
+            device_type = data.get("type")
+        return str(device_type) if device_type is not None else None
 
     def _configured_entry(self, device_id: str) -> ConfigEntry | None:
         """Find an existing entry for a physical device."""

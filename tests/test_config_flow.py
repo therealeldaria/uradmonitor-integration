@@ -85,6 +85,16 @@ def test_local_device_id_supports_top_level_fallback():
     assert UradmonitorConfigFlow._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
 
 
+def test_local_device_type_is_read_from_data_object():
+    """The local JSON type selects the status-page template."""
+    assert UradmonitorConfigFlow._local_device_type({"data": {"type": 8}}) == "8"
+
+
+def test_local_device_type_supports_top_level_fallback():
+    """Alternate local responses may put type at the top level."""
+    assert UradmonitorConfigFlow._local_device_type({"type": "8"}) == "8"
+
+
 def test_entry_sources_supports_legacy_local_entry():
     """Legacy local entries are readable before migration runs."""
     from types import SimpleNamespace

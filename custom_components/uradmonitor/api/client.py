@@ -3,12 +3,13 @@
 import asyncio
 import json
 import logging
-import re
 import socket
 from collections.abc import Mapping
 from typing import Any
 
 from aiohttp import ClientError, ClientSession
+
+from .local_templates import get_local_status_template
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,10 +60,12 @@ class UradmonitorApiClient:
         return dict(data)
 
     async def async_get_local_metadata(
-        self, host: str, port: int = 80
+        self, host: str, port: int = 80, device_type: str | None = None
     ) -> dict[str, str]:
         """Fetch hardware and software metadata from the local status page."""
-        return await self._async_get_local_status(host, port, metadata_only=True)
+        return await self._async_get_local_status(
+            host, port, metadata_only=True, device_type=device_type
+        )
 
     async def async_get_local_status_data(
         self, host: str, port: int = 80
@@ -71,7 +74,12 @@ class UradmonitorApiClient:
         return await self._async_get_local_status(host, port, metadata_only=False)
 
     async def _async_get_local_status(
-        self, host: str, port: int, *, metadata_only: bool
+        self,
+        host: str,
+        port: int,
+        *,
+        metadata_only: bool,
+        device_type: str | None = None,
     ) -> dict[str, Any]:
         """Fetch and parse the single-request local status page."""
         url = f"http://{host}:{port}/"
@@ -87,41 +95,18 @@ class UradmonitorApiClient:
             )
             raise UradmonitorApiError("Unable to fetch local device status") from err
 
-        id_match = re.search(r"<b>uRADMonitor\s+(?P<id>[^<\s]+)</b>", page)
-        metadata_match = re.search(
-            r"type:(?P<type>\S+)\s+hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+(?P<detector>[^<\s]+)",
-            page,
-        )
-        metadata = {
-            "device_id": id_match.group("id") if id_match else None,
-            "device_type": metadata_match.group("type") if metadata_match else None,
-            "hardware_version": metadata_match.group("hw") if metadata_match else None,
-            "software_version": metadata_match.group("sw") if metadata_match else None,
-            "detector": metadata_match.group("detector") if metadata_match else None,
-        }
-        metadata = {key: value for key, value in metadata.items() if value is not None}
+        template = get_local_status_template(device_type)
+        if template is None:
+            raise UradmonitorApiError(
+                f"No local status template for device type {device_type!r}"
+            )
+        metadata, values = template.parse(page)
         if metadata_only:
             _LOGGER.debug(
                 "Local device metadata received with fields: %s", sorted(metadata)
             )
             return metadata
 
-        values = {}
-        for key, pattern in {
-            "cpm": r"radiation:(?P<value>[\d.]+)CPM",
-            "temperature": r"temperature:(?P<value>[\d.]+)C",
-            "pressure": r"pressure:(?P<value>[\d.]+)Pa",
-            "humidity": r"humidty:(?P<value>[\d.]+)RH",
-            "voc": r"VOC:(?P<value>[\d.]+)",
-            "ch2o": r"CH2O:(?P<value>[\d.]+)ppm",
-            "pm25": r"PM2\.5:(?P<value>[\d.]+)ug/m\^3",
-            "co2": r"CO2:(?P<value>[\d.]+)ppm",
-            "voltage": r"voltage:(?P<value>[\d.]+)V",
-            "duty": r"duty:(?P<value>[\d.]+)%",
-            "uptime": r"uptime:(?P<value>[\d.]+)s",
-        }.items():
-            if match := re.search(pattern, page):
-                values[key] = float(match.group("value"))
         if not metadata.get("device_id") or not values:
             raise UradmonitorApiError("Local device status did not contain readings")
         return {**metadata, **values}
@@ -145,14 +130,37 @@ class UradmonitorApiClient:
             status = headers[0].split(" ", 2)
             if len(status) < 2 or not status[1].startswith("2"):
                 raise UradmonitorApiError("Local device returned an HTTP error")
-            content_length = next(
-                int(line.split(":", 1)[1].strip())
-                for line in headers[1:]
-                if line.lower().startswith("content-length:")
+            content_length_header = next(
+                (
+                    line
+                    for line in headers[1:]
+                    if line.lower().startswith("content-length:")
+                ),
+                None,
             )
-            while len(body) < content_length:
-                body += connection.recv(4096)
-        return body[:content_length].decode("utf-8", errors="replace"), status[1]
+            content_length = (
+                int(content_length_header.split(":", 1)[1].strip())
+                if content_length_header
+                else None
+            )
+            while content_length is None or len(body) < content_length:
+                try:
+                    chunk = connection.recv(4096)
+                except TimeoutError:
+                    # Some device generations send a complete body but keep the
+                    # socket open or advertise an inaccurate Content-Length.
+                    # Return what we have; JSON/HTML parsing will reject a truly
+                    # incomplete response.
+                    if body:
+                        break
+                    raise
+                if not chunk:
+                    break
+                body += chunk
+        if not body:
+            raise TimeoutError("Local device returned an empty response")
+        text = body[:content_length] if content_length else body
+        return text.decode("utf-8", errors="replace"), status[1]
 
     async def async_get_devices(self) -> list[dict[str, Any]]:
         """Fetch devices available to the authenticated cloud user."""
