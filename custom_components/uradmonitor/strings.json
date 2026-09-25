@@ -13,7 +13,7 @@
         }
       },
       "local": {
-        "title": "Connect local uradmonitor",
+        "title": "Connect local uradmonitor (2026.08.5)",
         "description": "Enter the IP address or hostname of the UradMonitor device. The integration reads JSON data from the device's local API endpoint. If this device is already configured through cloud access, local data will be added to the same Home Assistant device. No API key is required.",
         "data": {
           "host": "Device IP address or hostname",

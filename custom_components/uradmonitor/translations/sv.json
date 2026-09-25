@@ -7,7 +7,7 @@
     "step": {
       "user": {"title": "Anslut uradmonitor", "data": {"access_mode": "Anslutningssätt"}},
       "local": {
-        "title": "Anslut lokal uradmonitor",
+        "title": "Anslut lokal uradmonitor (2026.08.5)",
         "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet.",
         "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"},
         "data_description": {"port": "Det lokala API:et använder normalt port 80."}
