@@ -24,7 +24,8 @@
         },
         "error": {
           "cannot_connect": "Unable to connect to the local device. Check the host and port.",
-          "invalid_response": "The local device did not return a valid device ID."
+          "invalid_response": "The local device did not return a valid device ID.",
+          "unsupported_device": "This device type is not supported yet. Please submit an issue with the complete /j response and the HTML returned by /. Redact public IP addresses or other sensitive information if needed."
         }
       },
       "cloud": {
