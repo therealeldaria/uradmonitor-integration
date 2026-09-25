@@ -14,7 +14,7 @@ from ..const import CONF_HOST, CONF_PORT
 _SERVICE_SUFFIX = "._http._tcp.local."
 _SERVICE_PREFIX = "uradmonitor-"
 _DISCOVERY_RETRIES = 6
-_DISCOVERY_RETRY_DELAY = 5
+_DISCOVERY_RETRY_DELAY = 30
 
 _LOGGER = logging.getLogger(__name__)
 
