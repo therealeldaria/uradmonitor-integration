@@ -3,6 +3,7 @@
 from typing import Any
 
 from homeassistant import config_entries
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from ..const import CONF_HOST, CONF_PORT
@@ -41,4 +42,11 @@ class DiscoveryConfigFlowMixin:
         """Handle an HTTP service announced by an UradMonitor."""
         if not is_uradmonitor_service(discovery_info):
             return self.async_abort(reason="not_uradmonitor")
-        return await self.async_step_local(discovered_local_source(discovery_info))
+        source = discovered_local_source(discovery_info)
+        result = await self.async_step_local(source)
+        if result.get("type") == FlowResultType.FORM and result.get("errors"):
+            return self.async_abort(
+                reason=result["errors"].get("base", "cannot_connect"),
+                description_placeholders={"host": str(source[CONF_HOST])},
+            )
+        return result

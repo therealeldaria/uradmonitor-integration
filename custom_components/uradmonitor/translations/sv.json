@@ -3,7 +3,10 @@
     "abort": {
       "source_added": "Den extra datakällan lades till på den befintliga enheten.",
       "already_configured": "Den här datakällan är redan konfigurerad för enheten.",
-      "not_uradmonitor": "Den upptäckta HTTP-tjänsten är inte en UradMonitor-enhet."
+      "not_uradmonitor": "Den upptäckta HTTP-tjänsten är inte en UradMonitor-enhet.",
+      "cannot_connect": "Det gick inte att ansluta till den upptäckta UradMonitor-enheten på {host}.",
+      "invalid_response": "Den upptäckta UradMonitor-enheten på {host} returnerade inget giltigt enhets-ID.",
+      "unsupported_device": "Den upptäckta enhetstypen stöds inte ännu. Lägg gärna upp svaren från http://{host}/j och http://{host}/ i [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues). Ta bort publika IP-adresser eller annan känslig information vid behov."
     },
     "step": {
       "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API.", "data": {"access_mode": "Anslutningssätt"}},
