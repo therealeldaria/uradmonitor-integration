@@ -1,5 +1,10 @@
 """Tests for the uradmonitor config flow."""
 
+from custom_components.uradmonitor.api.local_templates import (
+    LEGACY_A3_TEMPLATE,
+    device_name,
+    get_local_device_definition,
+)
 from custom_components.uradmonitor.config_flow import UradmonitorConfigFlow
 from custom_components.uradmonitor.const import (
     ACCESS_MODE_CLOUD,
@@ -93,6 +98,29 @@ def test_local_device_type_is_read_from_data_object():
 def test_local_device_type_supports_top_level_fallback():
     """Alternate local responses may put type at the top level."""
     assert UradmonitorConfigFlow._local_device_type({"type": "8"}) == "8"
+
+
+def test_device_type_selects_a_named_definition_and_reusable_template():
+    """The JSON type selects a device name and metadata template."""
+    definition = get_local_device_definition(8)
+    assert definition is not None
+    assert definition.name == "A3"
+    assert definition.metadata_template is LEGACY_A3_TEMPLATE
+    assert device_name(definition, 104) == "A3-104"
+
+
+def test_metadata_template_does_not_extract_sensor_values_or_identity():
+    """HTML templates return static metadata only."""
+    metadata = LEGACY_A3_TEMPLATE.parse_metadata(
+        "<b>uRADMonitor 8200005B</b><br>type:8 hw:104 sw:124 SI29BG"
+        "<hr>radiation:9CPM<br>temperature:19.73C"
+    )
+    assert metadata == {
+        "device_type": "8",
+        "hardware_version": "104",
+        "software_version": "124",
+        "detector": "SI29BG",
+    }
 
 
 def test_entry_sources_supports_legacy_local_entry():

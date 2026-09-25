@@ -1,67 +1,95 @@
-"""Templates for parsing uRADMonitor local status pages."""
+"""Device definitions and metadata templates for local uRADMonitor pages."""
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from ..const import (
+    CONF_DETECTOR,
+    CONF_DEVICE_TYPE,
+    CONF_HARDWARE_VERSION,
+    CONF_SOFTWARE_VERSION,
+)
+
 Metadata = dict[str, str]
-Values = dict[str, float]
 
 
 @dataclass(frozen=True)
 class LocalStatusTemplate:
-    """HTML parser selected from the device type reported by ``/j``."""
+    """Parser for static metadata on a device's HTML status page."""
 
     name: str
-    parse: Callable[[str], tuple[Metadata, Values]]
+    parse_metadata: Callable[[str], Metadata]
 
 
-def _parse_legacy_a3(page: str) -> tuple[Metadata, Values]:
-    """Parse the compact status page used by the original A3 generation."""
-    id_match = re.search(r"<b>uRADMonitor\s+(?P<id>[^<\s]+)</b>", page)
+@dataclass(frozen=True)
+class LocalDeviceDefinition:
+    """Definition selected by the device type reported by ``/j``."""
+
+    name: str
+    metadata_template: LocalStatusTemplate
+
+
+def _parse_legacy_a3_metadata(page: str) -> Metadata:
+    """Parse metadata from the compact status page used by the original A3."""
     metadata_match = re.search(
         r"type:(?P<type>\S+)\s+hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+"
         r"(?P<detector>[^<\s]+)",
         page,
     )
-    metadata = {
-        "device_id": id_match.group("id") if id_match else None,
-        "device_type": metadata_match.group("type") if metadata_match else None,
-        "hardware_version": metadata_match.group("hw") if metadata_match else None,
-        "software_version": metadata_match.group("sw") if metadata_match else None,
-        "detector": metadata_match.group("detector") if metadata_match else None,
+    if not metadata_match:
+        return {}
+    return {
+        CONF_DEVICE_TYPE: metadata_match.group("type"),
+        CONF_HARDWARE_VERSION: metadata_match.group("hw"),
+        CONF_SOFTWARE_VERSION: metadata_match.group("sw"),
+        CONF_DETECTOR: metadata_match.group("detector"),
     }
-    metadata = {key: value for key, value in metadata.items() if value is not None}
-
-    values: Values = {}
-    for key, pattern in {
-        "cpm": r"radiation:(?P<value>[\d.]+)CPM",
-        "temperature": r"temperature:(?P<value>[\d.]+)C",
-        "pressure": r"pressure:(?P<value>[\d.]+)Pa",
-        "humidity": r"humidty:(?P<value>[\d.]+)RH",
-        "voc": r"VOC:(?P<value>[\d.]+)",
-        "ch2o": r"CH2O:(?P<value>[\d.]+)ppm",
-        "pm25": r"PM2\.5:(?P<value>[\d.]+)ug/m\^3",
-        "co2": r"CO2:(?P<value>[\d.]+)ppm",
-        "voltage": r"voltage:(?P<value>[\d.]+)V",
-        "duty": r"duty:(?P<value>[\d.]+)%",
-        "uptime": r"uptime:(?P<value>[\d.]+)s",
-    }.items():
-        if match := re.search(pattern, page):
-            values[key] = float(match.group("value"))
-    return metadata, values
 
 
-# Keep this table as the single place where new local device types are added.
-# The type values are the values returned by the device's /j JSON endpoint.
-LOCAL_STATUS_TEMPLATES: dict[str, LocalStatusTemplate] = {
-    "8": LocalStatusTemplate("legacy_a3", _parse_legacy_a3),
+LEGACY_A3_TEMPLATE = LocalStatusTemplate(
+    "legacy_a3_metadata", _parse_legacy_a3_metadata
+)
+
+
+# This is the device-type translation table. Multiple type values may point to
+# the same definition and therefore reuse the same HTML metadata template.
+LOCAL_DEVICE_TYPES: dict[str, LocalDeviceDefinition] = {
+    "8": LocalDeviceDefinition("A3", LEGACY_A3_TEMPLATE),
 }
 
 
-def get_local_status_template(device_type: Any) -> LocalStatusTemplate | None:
-    """Return the HTML template for a device type reported by /j."""
+def get_local_device_definition(device_type: Any) -> LocalDeviceDefinition | None:
+    """Return the device definition for a type reported by /j."""
     if device_type is None:
         return None
-    return LOCAL_STATUS_TEMPLATES.get(str(device_type).strip())
+    return LOCAL_DEVICE_TYPES.get(str(device_type).strip())
+
+
+def local_json_metadata(data: Mapping[str, Any]) -> Metadata:
+    """Extract static device metadata from a local JSON response."""
+    payload = data.get("data", data)
+    if not isinstance(payload, Mapping):
+        return {}
+    aliases = {
+        CONF_DEVICE_TYPE: ("type", "device_type"),
+        CONF_HARDWARE_VERSION: ("hardware_version", "hw", "versionhw"),
+        CONF_SOFTWARE_VERSION: ("software_version", "sw", "versionsw"),
+        CONF_DETECTOR: ("detector",),
+    }
+    metadata: Metadata = {}
+    for key, names in aliases.items():
+        value = next(
+            (payload[name] for name in names if payload.get(name) is not None),
+            None,
+        )
+        if value is not None:
+            metadata[key] = str(value)
+    return metadata
+
+
+def device_name(definition: LocalDeviceDefinition, hardware_version: Any) -> str:
+    """Return the user-facing model name, such as ``A3-104``."""
+    hardware = str(hardware_version).strip() if hardware_version else "unknown"
+    return f"{definition.name}-{hardware}"
