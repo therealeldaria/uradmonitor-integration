@@ -7,7 +7,7 @@
     "step": {
       "user": {
         "title": "Connect uradmonitor (2026.09.1)",
-        "description": "Choose how Home Assistant should connect to this UradMonitor device. Local access reads data directly from the device. Cloud access uses the UradMonitor REST API. Integration version: 2026.09.1.",
+        "description": "Choose how Home Assistant should connect to this UradMonitor device. Local access reads data directly from the device. Cloud access uses the UradMonitor REST API.",
         "data": {
           "access_mode": "Access mode"
         }

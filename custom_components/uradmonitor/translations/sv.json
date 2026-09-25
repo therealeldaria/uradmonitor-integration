@@ -5,7 +5,7 @@
       "already_configured": "Den här datakällan är redan konfigurerad för enheten."
     },
     "step": {
-      "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API. Integrationsversion: 2026.09.1.", "data": {"access_mode": "Anslutningssätt"}},
+      "user": {"title": "Anslut uradmonitor (2026.09.1)", "description": "Välj hur Home Assistant ska ansluta till uradmonitor-enheten. Lokal anslutning läser data direkt från enheten och molnanslutning använder UradMonitors REST API.", "data": {"access_mode": "Anslutningssätt"}},
       "local": {
         "title": "Anslut lokal uradmonitor (2026.09.1)",
         "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet.",
