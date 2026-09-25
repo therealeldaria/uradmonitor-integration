@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
@@ -45,8 +46,20 @@ class DiscoveryConfigFlowMixin:
         source = discovered_local_source(discovery_info)
         result = await self.async_step_local(source)
         if result.get("type") == FlowResultType.FORM and result.get("errors"):
-            return self.async_abort(
-                reason=result["errors"].get("base", "cannot_connect"),
-                description_placeholders={"host": str(source[CONF_HOST])},
-            )
+            self._discovery_error = result["errors"].get("base", "cannot_connect")
+            self._discovery_host = str(source[CONF_HOST])
+            return await self.async_step_discovery_error()
         return result
+
+    async def async_step_discovery_error(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:
+        """Show a discovery error without asking for the host again."""
+        if user_input is not None:
+            return self.async_abort(reason="discovery_error_dismissed")
+        return self.async_show_form(
+            step_id="discovery_error",
+            data_schema=vol.Schema({}),
+            errors={"base": self._discovery_error},
+            description_placeholders={"host": self._discovery_host},
+        )

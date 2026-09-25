@@ -4,9 +4,10 @@
       "source_added": "The additional data source was added to the existing device.",
       "already_configured": "This data source is already configured for the device.",
       "not_uradmonitor": "The discovered HTTP service is not an UradMonitor device.",
+      "discovery_error_dismissed": "The discovered device was not added.",
       "cannot_connect": "Unable to connect to the discovered UradMonitor at {host}.",
       "invalid_response": "The discovered UradMonitor at {host} did not return a valid device ID.",
-      "unsupported_device": "This discovered device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed."
+      "unsupported_device": "This discovered device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed. You can also add this device through cloud access."
     },
     "step": {
       "user": {
@@ -44,12 +45,17 @@
         "data": {
           "device_id": "Device"
         }
+      },
+      "discovery_error": {
+        "title": "UradMonitor discovery",
+        "description": "Home Assistant discovered an UradMonitor at {host}.",
+        "data": {}
       }
     },
     "error": {
       "cannot_connect": "Unable to connect to the local device. Check the host and port.",
       "invalid_response": "The local device did not return a valid device ID.",
-      "unsupported_device": "This device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed."
+      "unsupported_device": "This device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed. You can also add this device through cloud access."
     }
   },
   "options": {
