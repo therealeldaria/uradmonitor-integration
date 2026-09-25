@@ -1,5 +1,7 @@
 """Zeroconf discovery for local UradMonitor devices."""
 
+import asyncio
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -11,6 +13,10 @@ from ..const import CONF_HOST, CONF_PORT
 
 _SERVICE_SUFFIX = "._http._tcp.local."
 _SERVICE_PREFIX = "uradmonitor-"
+_DISCOVERY_RETRIES = 6
+_DISCOVERY_RETRY_DELAY = 5
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def is_uradmonitor_service(discovery_info: ZeroconfServiceInfo) -> bool:
@@ -44,7 +50,22 @@ class DiscoveryConfigFlowMixin:
         if not is_uradmonitor_service(discovery_info):
             return self.async_abort(reason="not_uradmonitor")
         source = discovered_local_source(discovery_info)
-        result = await self.async_step_local(source)
+        result: config_entries.FlowResult
+        for attempt in range(_DISCOVERY_RETRIES):
+            result = await self.async_step_local(source)
+            if (
+                result.get("type") != FlowResultType.FORM
+                or result.get("errors", {}).get("base") != "cannot_connect"
+                or attempt == _DISCOVERY_RETRIES - 1
+            ):
+                break
+            _LOGGER.debug(
+                "Discovered UradMonitor at %s is not ready; retrying (%s/%s)",
+                source[CONF_HOST],
+                attempt + 2,
+                _DISCOVERY_RETRIES,
+            )
+            await asyncio.sleep(_DISCOVERY_RETRY_DELAY)
         if result.get("type") == FlowResultType.FORM and result.get("errors"):
             self._discovery_error = result["errors"].get("base", "cannot_connect")
             self._discovery_host = str(source[CONF_HOST])
