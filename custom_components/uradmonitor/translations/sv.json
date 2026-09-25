@@ -10,15 +10,15 @@
         "title": "Anslut lokal uradmonitor",
         "description": "Ange IP-adressen eller värdnamnet för uradmonitor-enheten. Integrationen läser JSON-data från enhetens lokala API. Om enheten redan är konfigurerad via molnet läggs lokal data till på samma Home Assistant-enhet.",
         "data": {"host": "Enhetens IP-adress eller värdnamn", "port": "Lokal API-port"},
-        "data_description": {"port": "Det lokala API:et använder normalt port 80."},
-        "error": {
-          "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
-          "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
-          "unsupported_device": "Den här enhetstypen stöds inte ännu. Skicka gärna ett ärende med det fullständiga svaret från /j och HTML-svaret från /. Ta bort publika IP-adresser eller annan känslig information vid behov."
-        }
+        "data_description": {"port": "Det lokala API:et använder normalt port 80."}
       },
       "cloud": {"title": "Anslut uradmonitor-molnet", "data": {"cloud_user_id": "Användar-ID", "cloud_user_key": "Användarnyckel"}},
       "cloud_device": {"title": "Välj uradmonitor-enhet", "data": {"device_id": "Enhet"}}
+    },
+    "error": {
+      "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
+      "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
+      "unsupported_device": "Den här enhetstypen stöds inte ännu. Skicka gärna ett ärende med det fullständiga svaret från /j och HTML-svaret från /. Ta bort publika IP-adresser eller annan känslig information vid behov."
     }
   },
   "options": {

@@ -21,11 +21,6 @@
         },
         "data_description": {
           "port": "The local API normally uses port 80. Change this only if your device uses another port."
-        },
-        "error": {
-          "cannot_connect": "Unable to connect to the local device. Check the host and port.",
-          "invalid_response": "The local device did not return a valid device ID.",
-          "unsupported_device": "This device type is not supported yet. Please submit an issue with the complete /j response and the HTML returned by /. Redact public IP addresses or other sensitive information if needed."
         }
       },
       "cloud": {
@@ -46,6 +41,11 @@
           "device_id": "Device"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the local device. Check the host and port.",
+      "invalid_response": "The local device did not return a valid device ID.",
+      "unsupported_device": "This device type is not supported yet. Please submit an issue with the complete /j response and the HTML returned by /. Redact public IP addresses or other sensitive information if needed."
     }
   },
   "options": {
