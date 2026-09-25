@@ -1,6 +1,6 @@
 """Tests for the uradmonitor config flow."""
 
-from custom_components.uradmonitor.api.local_templates import LEGACY_A3_TEMPLATE
+from custom_components.uradmonitor.api.local_templates import A3_2016_TEMPLATE
 from custom_components.uradmonitor.config_flow_cloud import CloudConfigFlowMixin
 from custom_components.uradmonitor.config_flow_common import entry_sources
 from custom_components.uradmonitor.config_flow_local import LocalConfigFlowMixin
@@ -64,7 +64,6 @@ def test_device_name_is_device_id_for_all_access_modes():
 
 def test_known_model_mappings():
     """Known detector and hardware combinations resolve to their model."""
-    assert get_model("SBM20", 109) == "Model A"
     assert get_model("SI29BG", 104) == "Model A3"
     assert get_model("SI29BG", 110) == "Model A3"
 
@@ -107,13 +106,13 @@ def test_device_type_selects_a_named_definition_and_reusable_template():
     definition = get_supported_device(8)
     assert definition is not None
     assert definition.name == "A3"
-    assert definition.metadata_template is LEGACY_A3_TEMPLATE
+    assert definition.metadata_template is A3_2016_TEMPLATE
     assert device_name(definition, 104) == "A3-104"
 
 
 def test_metadata_template_does_not_extract_sensor_values_or_identity():
     """HTML templates return static metadata only."""
-    metadata = LEGACY_A3_TEMPLATE.parse_metadata(
+    metadata = A3_2016_TEMPLATE.parse_metadata(
         "<b>uRADMonitor 8200005B</b><br>type:8 hw:104 sw:124 SI29BG"
         "<hr>radiation:9CPM<br>temperature:19.73C"
     )

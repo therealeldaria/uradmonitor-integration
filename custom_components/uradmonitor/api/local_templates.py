@@ -23,8 +23,8 @@ class LocalStatusTemplate:
     parse_metadata: Callable[[str], Metadata]
 
 
-def _parse_legacy_a3_metadata(page: str) -> Metadata:
-    """Parse metadata from the compact status page used by the original A3."""
+def _parse_a3_2016_metadata(page: str) -> Metadata:
+    """Parse metadata from the compact A3 status page used since 2016."""
     metadata_match = re.search(
         r"(?:type:\S+\s+)?hw:(?P<hw>\S+)\s+sw:(?P<sw>\S+)\s+"
         r"(?P<detector>[^<\s]+)",
@@ -39,8 +39,8 @@ def _parse_legacy_a3_metadata(page: str) -> Metadata:
     }
 
 
-LEGACY_A3_TEMPLATE = LocalStatusTemplate(
-    "legacy_a3_metadata", _parse_legacy_a3_metadata
+A3_2016_TEMPLATE = LocalStatusTemplate(
+    "a3_2016_metadata", _parse_a3_2016_metadata
 )
 
 

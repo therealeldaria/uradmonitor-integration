@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Final
 
-from .api.local_templates import LEGACY_A3_TEMPLATE, LocalStatusTemplate
+from .api.local_templates import A3_2016_TEMPLATE, LocalStatusTemplate
 
 
 @dataclass(frozen=True)
@@ -25,14 +25,7 @@ SUPPORTED_DEVICES: Final[tuple[SupportedDevice, ...]] = (
         model="Model A3",
         api_types=("8",),
         detector_hardware=(("SI29BG", "104"), ("SI29BG", "110")),
-        metadata_template=LEGACY_A3_TEMPLATE,
-    ),
-    SupportedDevice(
-        name="A",
-        model="Model A",
-        api_types=(),
-        detector_hardware=(("SBM20", "109"),),
-        metadata_template=LEGACY_A3_TEMPLATE,
+        metadata_template=A3_2016_TEMPLATE,
     ),
 )
 
