@@ -110,7 +110,9 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_HOST],
                     user_input.get(CONF_PORT, 80),
                 )
-                errors["base"] = "unsupported_device"
+                errors["base"] = self._unsupported_device_error(
+                    user_input[CONF_HOST]
+                )
                 metadata = {}
             else:
                 metadata = local_json_metadata(local_data)
@@ -173,11 +175,22 @@ class UradmonitorConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors={"base": error} if error else {},
-            description_placeholders={
-                "host": str(user_input.get(CONF_HOST, "<device-host>")
-                if user_input
-                else "<device-host>")
-            },
+        )
+
+    def _unsupported_device_error(self, host: str) -> str:
+        """Return actionable plain-text guidance for an unknown device type."""
+        if self.hass.config.language == "sv":
+            return (
+                "Den här enhetstypen stöds inte ännu. Lägg gärna upp svaren från "
+                f"http://{host}/j och http://{host}/ i GitHub-ärendehanteringen: "
+                "https://github.com/therealeldaria/uradmonitor-integration/issues. "
+                "Ta bort publika IP-adresser eller annan känslig information vid behov."
+            )
+        return (
+            "This device type is not supported yet. Please submit the responses "
+            f"from http://{host}/j and http://{host}/ to the GitHub issue tracker: "
+            "https://github.com/therealeldaria/uradmonitor-integration/issues. "
+            "Redact public IP addresses or other sensitive information if needed."
         )
 
     async def async_step_cloud(
