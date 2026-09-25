@@ -1,10 +1,6 @@
 """Tests for the uradmonitor config flow."""
 
-from custom_components.uradmonitor.api.local_templates import (
-    LEGACY_A3_TEMPLATE,
-    device_name,
-    get_local_device_definition,
-)
+from custom_components.uradmonitor.api.local_templates import LEGACY_A3_TEMPLATE
 from custom_components.uradmonitor.config_flow_cloud import CloudConfigFlowMixin
 from custom_components.uradmonitor.config_flow_common import entry_sources
 from custom_components.uradmonitor.config_flow_local import LocalConfigFlowMixin
@@ -19,7 +15,11 @@ from custom_components.uradmonitor.const import (
     CONF_SOURCES,
     DOMAIN,
 )
-from custom_components.uradmonitor.models import get_model
+from custom_components.uradmonitor.models import (
+    device_name,
+    get_model,
+    get_supported_device,
+)
 
 
 def test_local_access_mode_constants():
@@ -104,7 +104,7 @@ def test_local_device_type_supports_top_level_fallback():
 
 def test_device_type_selects_a_named_definition_and_reusable_template():
     """The JSON type selects a device name and metadata template."""
-    definition = get_local_device_definition(8)
+    definition = get_supported_device(8)
     assert definition is not None
     assert definition.name == "A3"
     assert definition.metadata_template is LEGACY_A3_TEMPLATE

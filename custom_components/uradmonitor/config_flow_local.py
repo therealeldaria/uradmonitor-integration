@@ -8,11 +8,7 @@ from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api.client import UradmonitorApiClient, UradmonitorApiError
-from .api.local_templates import (
-    device_name,
-    get_local_device_definition,
-    local_json_metadata,
-)
+from .api.local_templates import local_json_metadata
 from .config_flow_common import add_source_to_existing, configured_entry
 from .const import (
     ACCESS_MODE_LOCAL,
@@ -22,6 +18,7 @@ from .const import (
     CONF_PORT,
     CONF_SOURCES,
 )
+from .models import device_name, get_supported_device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +44,7 @@ class LocalConfigFlowMixin:
                 return self._show_local_form(user_input, "cannot_connect")
 
             device_type = self._local_device_type(local_data)
-            definition = get_local_device_definition(device_type)
+            definition = get_supported_device(device_type)
             if definition is None:
                 _LOGGER.error(
                     "Unsupported local UradMonitor device type %s at %s:%s",

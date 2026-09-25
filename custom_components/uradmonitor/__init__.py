@@ -11,7 +11,6 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api.client import UradmonitorApiClient, UradmonitorApiError
-from .api.local_templates import device_name, get_local_device_definition
 from .const import (
     ACCESS_MODE_LOCAL,
     CONF_ACCESS_MODE,
@@ -34,7 +33,7 @@ from .const import (
     PLATFORMS,
 )
 from .coordinator import UradmonitorCoordinator, has_local_source, is_cloud_entry
-from .models import get_model
+from .models import device_name, get_model, get_supported_device
 
 _LOGGER = logging.getLogger(__name__)
 _CLOUD_COORDINATORS = "cloud_coordinators"
@@ -139,7 +138,7 @@ async def _async_refresh_local_metadata(
     """Refresh static HTML metadata once when a local entry starts."""
     if not has_local_source(entry):
         return
-    definition = get_local_device_definition(entry.data.get(CONF_DEVICE_TYPE))
+    definition = get_supported_device(entry.data.get(CONF_DEVICE_TYPE))
     if definition is None:
         return
     source = entry.data.get(CONF_SOURCES, {}).get(ACCESS_MODE_LOCAL, {})
@@ -184,7 +183,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _async_refresh_local_metadata(hass, entry)
     coordinators = await _async_get_coordinators(hass, entry)
     detector = entry.data.get(CONF_DETECTOR)
-    definition = get_local_device_definition(entry.data.get(CONF_DEVICE_TYPE))
+    definition = get_supported_device(entry.data.get(CONF_DEVICE_TYPE))
     model = (
         device_name(definition, entry.data.get(CONF_HARDWARE_VERSION))
         if definition
