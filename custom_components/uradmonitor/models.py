@@ -11,7 +11,6 @@ class SupportedDevice:
     """All known identification and setup information for one device family."""
 
     name: str
-    model: str
     api_types: tuple[str, ...]
     metadata_template: LocalStatusTemplate
 
@@ -21,7 +20,6 @@ class SupportedDevice:
 SUPPORTED_DEVICES: Final[tuple[SupportedDevice, ...]] = (
     SupportedDevice(
         name="A3",
-        model="Model A3",
         api_types=("8",),
         metadata_template=A3_2016_TEMPLATE,
     ),
