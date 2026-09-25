@@ -33,7 +33,7 @@ from .const import (
     PLATFORMS,
 )
 from .coordinator import UradmonitorCoordinator, has_local_source, is_cloud_entry
-from .models import device_name, get_model, get_supported_device
+from .models import device_name, get_supported_device
 
 _LOGGER = logging.getLogger(__name__)
 _CLOUD_COORDINATORS = "cloud_coordinators"
@@ -187,7 +187,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     model = (
         device_name(definition, entry.data.get(CONF_HARDWARE_VERSION))
         if definition
-        else get_model(detector, entry.data.get(CONF_HARDWARE_VERSION))
+        else "Unknown"
     )
     if detector:
         model = f"{model} ({detector})"

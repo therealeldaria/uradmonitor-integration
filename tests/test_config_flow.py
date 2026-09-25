@@ -17,7 +17,6 @@ from custom_components.uradmonitor.const import (
 )
 from custom_components.uradmonitor.models import (
     device_name,
-    get_model,
     get_supported_device,
 )
 
@@ -60,17 +59,6 @@ def test_cloud_device_label_has_generic_fallback():
 def test_device_name_is_device_id_for_all_access_modes():
     """The stable device ID is used as the Home Assistant device name."""
     assert CloudConfigFlowMixin._device_name("5E6F7081") == "5E6F7081"
-
-
-def test_known_model_mappings():
-    """Known detector and hardware combinations resolve to their model."""
-    assert get_model("SI29BG", 104) == "Model A3"
-    assert get_model("SI29BG", 110) == "Model A3"
-
-
-def test_unknown_model_mapping_is_explicit():
-    """New hardware combinations remain visible as unknown."""
-    assert get_model("unknown", "unknown") == "Unknown"
 
 
 def test_local_device_id_is_read_from_data_object():

@@ -13,7 +13,6 @@ class SupportedDevice:
     name: str
     model: str
     api_types: tuple[str, ...]
-    detector_hardware: tuple[tuple[str, str], ...]
     metadata_template: LocalStatusTemplate
 
 
@@ -24,7 +23,6 @@ SUPPORTED_DEVICES: Final[tuple[SupportedDevice, ...]] = (
         name="A3",
         model="Model A3",
         api_types=("8",),
-        detector_hardware=(("SI29BG", "104"), ("SI29BG", "110")),
         metadata_template=A3_2016_TEMPLATE,
     ),
 )
@@ -36,19 +34,6 @@ def get_supported_device(device_type: object) -> SupportedDevice | None:
     return next(
         (device for device in SUPPORTED_DEVICES if normalized in device.api_types),
         None,
-    )
-
-
-def get_model(detector: object, hardware_version: object) -> str:
-    """Return the registered model for detector and hardware characteristics."""
-    key = (str(detector), str(hardware_version))
-    return next(
-        (
-            device.model
-            for device in SUPPORTED_DEVICES
-            if key in device.detector_hardware
-        ),
-        "Unknown",
     )
 
 
