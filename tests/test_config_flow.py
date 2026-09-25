@@ -117,6 +117,22 @@ def test_zeroconf_ignores_other_http_services():
     )
 
 
+def test_local_form_preserves_discovered_host_and_port():
+    """Discovery values remain filled in when local validation fails."""
+    class Flow(LocalConfigFlowMixin):
+        def async_show_form(self, **kwargs):
+            return kwargs
+
+    form = Flow()._show_local_form(  # noqa: SLF001
+        {CONF_HOST: "192.168.30.7", CONF_PORT: 8080}, "unsupported_device"
+    )
+
+    assert form["data_schema"]({}) == {
+        CONF_HOST: "192.168.30.7",
+        CONF_PORT: 8080,
+    }
+
+
 def test_device_type_selects_a_named_definition_and_reusable_template():
     """The JSON type selects a device name and metadata template."""
     definition = get_supported_device(8)

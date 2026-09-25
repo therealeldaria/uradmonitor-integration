@@ -97,12 +97,21 @@ class LocalConfigFlowMixin:
         self, user_input: dict[str, Any] | None, error: str | None = None
     ) -> config_entries.FlowResult:
         """Show the local connection form."""
+        host = user_input.get(CONF_HOST) if user_input else None
+        host_field = (
+            vol.Required(CONF_HOST, default=host)
+            if host
+            else vol.Required(CONF_HOST)
+        )
         return self.async_show_form(
             step_id="local",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_HOST): str,
-                    vol.Optional(CONF_PORT, default=80): vol.Coerce(int),
+                    host_field: str,
+                    vol.Optional(
+                        CONF_PORT,
+                        default=user_input.get(CONF_PORT, 80) if user_input else 80,
+                    ): vol.Coerce(int),
                 }
             ),
             errors={"base": error} if error else {},
