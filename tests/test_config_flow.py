@@ -5,7 +5,9 @@ from custom_components.uradmonitor.api.local_templates import (
     device_name,
     get_local_device_definition,
 )
-from custom_components.uradmonitor.config_flow import UradmonitorConfigFlow
+from custom_components.uradmonitor.config_flow_cloud import CloudConfigFlowMixin
+from custom_components.uradmonitor.config_flow_common import entry_sources
+from custom_components.uradmonitor.config_flow_local import LocalConfigFlowMixin
 from custom_components.uradmonitor.const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -31,7 +33,7 @@ def test_local_access_mode_constants():
 def test_cloud_device_label_prefers_note_and_includes_id():
     """A cloud device note is displayed together with its ID."""
     assert (
-        UradmonitorConfigFlow._device_label(  # noqa: SLF001
+        CloudConfigFlowMixin._device_label(  # noqa: SLF001
             {"id": "82000466", "note": "Living room", "city": "Fyrunga"}
         )
         == "Living room (ID: 82000466)"
@@ -41,7 +43,7 @@ def test_cloud_device_label_prefers_note_and_includes_id():
 def test_cloud_device_label_falls_back_to_city():
     """The city is used when a cloud device has no note."""
     assert (
-        UradmonitorConfigFlow._device_label(  # noqa: SLF001
+        CloudConfigFlowMixin._device_label(  # noqa: SLF001
             {"id": "82000466", "city": "Fyrunga"}
         )
         == "Fyrunga (ID: 82000466)"
@@ -50,14 +52,14 @@ def test_cloud_device_label_falls_back_to_city():
 
 def test_cloud_device_label_has_generic_fallback():
     """A generic name is used when no location is available."""
-    assert UradmonitorConfigFlow._device_label({"id": "82000466"}) == (
+    assert CloudConfigFlowMixin._device_label({"id": "82000466"}) == (
         "UradMonitor (ID: 82000466)"
     )
 
 
 def test_device_name_is_device_id_for_all_access_modes():
     """The stable device ID is used as the Home Assistant device name."""
-    assert UradmonitorConfigFlow._device_name("5E6F7081") == "5E6F7081"
+    assert CloudConfigFlowMixin._device_name("5E6F7081") == "5E6F7081"
 
 
 def test_known_model_mappings():
@@ -82,22 +84,22 @@ def test_local_device_id_is_read_from_data_object():
             "temperature": 26.70,
         }
     }
-    assert UradmonitorConfigFlow._local_device_id(response) == "5E6F7081"
+    assert LocalConfigFlowMixin._local_device_id(response) == "5E6F7081"
 
 
 def test_local_device_id_supports_top_level_fallback():
     """A top-level ID remains supported for alternate local responses."""
-    assert UradmonitorConfigFlow._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
+    assert LocalConfigFlowMixin._local_device_id({"id": "5E6F7081"}) == "5E6F7081"
 
 
 def test_local_device_type_is_read_from_data_object():
     """The local JSON type selects the status-page template."""
-    assert UradmonitorConfigFlow._local_device_type({"data": {"type": 8}}) == "8"
+    assert LocalConfigFlowMixin._local_device_type({"data": {"type": 8}}) == "8"
 
 
 def test_local_device_type_supports_top_level_fallback():
     """Alternate local responses may put type at the top level."""
-    assert UradmonitorConfigFlow._local_device_type({"type": "8"}) == "8"
+    assert LocalConfigFlowMixin._local_device_type({"type": "8"}) == "8"
 
 
 def test_device_type_selects_a_named_definition_and_reusable_template():
@@ -134,7 +136,7 @@ def test_entry_sources_supports_legacy_local_entry():
         }
     )
 
-    assert UradmonitorConfigFlow._entry_sources(entry) == {  # noqa: SLF001
+    assert entry_sources(entry) == {
         ACCESS_MODE_LOCAL: {CONF_HOST: "192.0.2.10", CONF_PORT: 80}
     }
 
@@ -152,4 +154,4 @@ def test_entry_sources_reads_combined_entry():
     }
     entry = SimpleNamespace(data={CONF_SOURCES: sources})
 
-    assert UradmonitorConfigFlow._entry_sources(entry) == sources  # noqa: SLF001
+    assert entry_sources(entry) == sources
