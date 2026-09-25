@@ -34,6 +34,8 @@ The implementation language is Python. Follow current Home Assistant APIs and as
 ## Development rules
 
 - Prefer small, reviewable changes with tests.
+- Use a dedicated feature branch for each separate feature, bug fix, or other independent change; do not work directly on `main`.
+- Commit continuously in small, logical increments as completed work becomes stable. Keep commits focused and describe the change clearly.
 - Use type annotations, clear names, and Home Assistant helpers.
 - Never block the event loop.
 - Keep user-facing text in `strings.json` and translations.
