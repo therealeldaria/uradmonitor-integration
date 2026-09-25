@@ -1,9 +1,6 @@
 """Tests for the uradmonitor config flow."""
 
 from custom_components.uradmonitor.api.local_templates import A3_2016_TEMPLATE
-from custom_components.uradmonitor.config_flow_cloud import CloudConfigFlowMixin
-from custom_components.uradmonitor.config_flow_common import entry_sources
-from custom_components.uradmonitor.config_flow_local import LocalConfigFlowMixin
 from custom_components.uradmonitor.const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -15,6 +12,9 @@ from custom_components.uradmonitor.const import (
     CONF_SOURCES,
     DOMAIN,
 )
+from custom_components.uradmonitor.flows.cloud import CloudConfigFlowMixin
+from custom_components.uradmonitor.flows.common import entry_sources
+from custom_components.uradmonitor.flows.local import LocalConfigFlowMixin
 from custom_components.uradmonitor.models import (
     device_name,
     get_supported_device,

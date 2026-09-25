@@ -6,10 +6,10 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 
-from .config_flow_cloud import CloudConfigFlowMixin
-from .config_flow_local import LocalConfigFlowMixin
 from .const import ACCESS_MODE_CLOUD, ACCESS_MODE_LOCAL, CONF_ACCESS_MODE, DOMAIN
-from .options_flow import UradmonitorOptionsFlow
+from .flows.cloud import CloudConfigFlowMixin
+from .flows.local import LocalConfigFlowMixin
+from .flows.options import UradmonitorOptionsFlow
 
 
 class UradmonitorConfigFlow(
