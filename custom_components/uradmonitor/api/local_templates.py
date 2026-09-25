@@ -44,6 +44,33 @@ A3_2016_TEMPLATE = LocalStatusTemplate(
 )
 
 
+def _parse_a3_2026_metadata(page: str) -> Metadata:
+    """Parse metadata from the newer A3 status page.
+
+    The newer page puts the hardware and software versions in its heading and
+    does not expose the detector chip. Sensor values in the rest of the page
+    are intentionally ignored.
+    """
+    metadata_match = re.search(
+        r"uRADMonitor\s+A3\s+[^<\s]+\s+-\s*"
+        r"HW:\s*(?P<hw>[^\s<]+)\s+SW:\s*(?P<sw>[^\s<]+)",
+        page,
+        re.IGNORECASE,
+    )
+    if not metadata_match:
+        return {}
+    return {
+        CONF_HARDWARE_VERSION: metadata_match.group("hw"),
+        CONF_SOFTWARE_VERSION: metadata_match.group("sw"),
+        CONF_DETECTOR: "Unknown",
+    }
+
+
+A3_2026_TEMPLATE = LocalStatusTemplate(
+    "a3_2026_metadata", _parse_a3_2026_metadata
+)
+
+
 def local_json_metadata(data: Mapping[str, Any]) -> Metadata:
     """Extract static device metadata from a local JSON response."""
     payload = data.get("data", data)
