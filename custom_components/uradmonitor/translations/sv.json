@@ -26,15 +26,6 @@
       "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
       "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
       "unsupported_device": "Den här enhetstypen stöds inte ännu. Lägg gärna upp svaren från http://{host}/j och http://{host}/ i [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues). Ta bort publika IP-adresser eller annan känslig information vid behov. Du kan också lägga till enheten via molnanslutningen."
-    },
-    "selector": {
-      "discovery_action": {
-        "options": {
-          "merge": "Slå ihop lokal anslutning och molnanslutning",
-          "local_only": "Inget moln, endast lokal anslutning",
-          "cloud_only": "Byt till molnanslutning"
-        }
-      }
     }
   },
   "options": {
