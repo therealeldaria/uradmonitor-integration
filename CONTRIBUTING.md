@@ -1,10 +1,14 @@
 # Contributing
 
-This GitHub repository is a read-only mirror of the canonical GitLab project.
-
-All development, issues, merge requests, and CI are managed on GitLab:
+The canonical development repository is hosted on GitLab:
 
 <https://gitlab.com/therealeldaria/uradmonitor-integration>
 
-Please open issues and merge requests there. GitHub is used for public releases
-and HACS distribution only.
+For bug reports, feature requests, and support, use GitHub Issues:
+
+<https://github.com/therealeldaria/uradmonitor-integration/issues>
+
+For code contributions, use the GitLab project and submit merge requests there.
+CI and the development workflow are managed on GitLab. The GitHub repository is
+used for public releases, HACS distribution, and the community-facing issue
+tracker.

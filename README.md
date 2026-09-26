@@ -28,6 +28,12 @@ Cloud setup can only add devices returned for the authenticated account. This in
 
 The integration has been tested with a uRADMonitor A3 using hardware version `104` and software version `124`.
 
+## Support and issues
+
+Found a bug, have a feature request, or need help with the integration? Please use the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues).
+
+Development and merge requests are handled in the canonical GitLab repository.
+
 ## Development
 
 Prerequisites: Python supported by the current Home Assistant development dependency and [uv](https://docs.astral.sh/uv/).
@@ -74,7 +80,7 @@ You can also use this [My Home Assistant link](https://my.home-assistant.io/redi
 
 After installation, add **UradMonitor** from **Settings → Devices & services → Add Integration**. HACS will use the GitHub releases for updates.
 
-Development, issues, and CI are hosted in GitLab. The public GitHub repository is the release mirror used for HACS distribution. For development, use the canonical GitLab repository.
+Development and CI are hosted in GitLab. The public GitHub repository is used for HACS distribution and as the community-facing issue tracker. For development and contributions, use the canonical GitLab repository.
 
 Approved GitLab release tags are mirrored to GitHub by GitLab CI, which also creates the corresponding GitHub release.
 
