@@ -1,6 +1,9 @@
 """Tests for the uradmonitor config flow."""
 
-from custom_components.uradmonitor.api.local_templates import A3_2016_TEMPLATE
+from custom_components.uradmonitor.api.local_templates import (
+    A3_2016_TEMPLATE,
+    A3_2026_TEMPLATE,
+)
 from custom_components.uradmonitor.const import (
     ACCESS_MODE_CLOUD,
     ACCESS_MODE_LOCAL,
@@ -16,6 +19,7 @@ from custom_components.uradmonitor.flows.cloud import CloudConfigFlowMixin
 from custom_components.uradmonitor.flows.common import entry_sources
 from custom_components.uradmonitor.flows.discovery import (
     discovered_local_source,
+    discovered_local_unique_id,
     is_uradmonitor_service,
 )
 from custom_components.uradmonitor.flows.local import LocalConfigFlowMixin
@@ -106,6 +110,7 @@ def test_zeroconf_identifies_uradmonitor_http_service():
 
     assert is_uradmonitor_service(info)
     assert discovered_local_source(info) == {CONF_HOST: "192.168.30.7", CONF_PORT: 80}
+    assert discovered_local_unique_id(info) == "192.168.30.7:80"
 
 
 def test_zeroconf_ignores_other_http_services():
@@ -142,6 +147,15 @@ def test_device_type_selects_a_named_definition_and_reusable_template():
     assert device_name(definition, 104) == "A3-104"
 
 
+def test_new_a3_type_selects_a3_2026_metadata_template():
+    """The newer A3 JSON type selects its newer status-page parser."""
+    definition = get_supported_device(82)
+
+    assert definition is not None
+    assert definition.name == "A3"
+    assert definition.metadata_template is A3_2026_TEMPLATE
+
+
 def test_metadata_template_does_not_extract_sensor_values_or_identity():
     """HTML templates return static metadata only."""
     metadata = A3_2016_TEMPLATE.parse_metadata(
@@ -152,6 +166,20 @@ def test_metadata_template_does_not_extract_sensor_values_or_identity():
         "hardware_version": "104",
         "software_version": "124",
         "detector": "SI29BG",
+    }
+
+
+def test_a3_2026_metadata_template_ignores_detector_and_sensor_values():
+    """The A3 2026 page provides only hardware and software metadata."""
+    metadata = A3_2026_TEMPLATE.parse_metadata(
+        "<h3><u>uRADMonitor A3 82000536 - HW:110 SW:96 14.75MHz</u></h3>"
+        "<b>Temperature:</b>17.95C <b>Carbon Dioxide:</b>521ppm"
+    )
+
+    assert metadata == {
+        "hardware_version": "110",
+        "software_version": "96",
+        "detector": "Unknown",
     }
 
 

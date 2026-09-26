@@ -6,15 +6,24 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+)
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
+from ..api.client import UradmonitorApiClient, UradmonitorApiError
 from ..const import CONF_HOST, CONF_PORT
+from .common import configured_entry
 
 _SERVICE_SUFFIX = "._http._tcp.local."
 _SERVICE_PREFIX = "uradmonitor-"
+_DISCOVERY_ACTION_MERGE = "merge"
+_DISCOVERY_ACTION_LOCAL = "local_only"
+_DISCOVERY_ACTION_CLOUD = "cloud_only"
 _DISCOVERY_RETRIES = 6
-_DISCOVERY_RETRY_DELAY = 5
+_DISCOVERY_RETRY_DELAY = 30
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +49,12 @@ def discovered_local_source(discovery_info: ZeroconfServiceInfo) -> dict[str, An
     }
 
 
+def discovered_local_unique_id(discovery_info: ZeroconfServiceInfo) -> str:
+    """Return a stable temporary ID for an in-progress discovery flow."""
+    source = discovered_local_source(discovery_info)
+    return f"{source[CONF_HOST]}:{source[CONF_PORT]}"
+
+
 class DiscoveryConfigFlowMixin:
     """Provide Zeroconf discovery for local UradMonitor devices."""
 
@@ -50,27 +65,74 @@ class DiscoveryConfigFlowMixin:
         if not is_uradmonitor_service(discovery_info):
             return self.async_abort(reason="not_uradmonitor")
         source = discovered_local_source(discovery_info)
-        result: config_entries.FlowResult
+        await self.async_set_unique_id(discovered_local_unique_id(discovery_info))
+        local_data: dict[str, Any] | None = None
         for attempt in range(_DISCOVERY_RETRIES):
-            result = await self.async_step_local(source)
-            if (
-                result.get("type") != FlowResultType.FORM
-                or result.get("errors", {}).get("base") != "cannot_connect"
-                or attempt == _DISCOVERY_RETRIES - 1
-            ):
-                break
-            _LOGGER.debug(
-                "Discovered UradMonitor at %s is not ready; retrying (%s/%s)",
-                source[CONF_HOST],
-                attempt + 2,
-                _DISCOVERY_RETRIES,
-            )
-            await asyncio.sleep(_DISCOVERY_RETRY_DELAY)
-        if result.get("type") == FlowResultType.FORM and result.get("errors"):
-            self._discovery_error = result["errors"].get("base", "cannot_connect")
+            try:
+                client = UradmonitorApiClient(async_get_clientsession(self.hass))
+                local_data = await client.async_get_local_data(
+                    source[CONF_HOST], source[CONF_PORT]
+                )
+            except UradmonitorApiError:
+                if attempt == _DISCOVERY_RETRIES - 1:
+                    self._discovery_error = "cannot_connect"
+                    self._discovery_host = str(source[CONF_HOST])
+                    return await self.async_step_discovery_error()
+                _LOGGER.debug(
+                    "Discovered UradMonitor at %s is not ready; retrying (%s/%s)",
+                    source[CONF_HOST],
+                    attempt + 2,
+                    _DISCOVERY_RETRIES,
+                )
+                await asyncio.sleep(_DISCOVERY_RETRY_DELAY)
+                continue
+            break
+
+        device_id = self._local_device_id(local_data or {})
+        if not device_id:
+            self._discovery_error = "invalid_response"
             self._discovery_host = str(source[CONF_HOST])
             return await self.async_step_discovery_error()
-        return result
+        if configured_entry(self, device_id) is not None:
+            return self.async_abort(reason="already_configured")
+
+        self._discovered_source = source
+        self._discovered_device_id = device_id
+        self._discovered_local_data = local_data
+        return await self.async_step_discovered_local()
+
+    async def async_step_discovered_local(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:
+        """Choose how to configure a discovered local device."""
+        if user_input is not None:
+            action = user_input["discovery_action"]
+            if action == _DISCOVERY_ACTION_LOCAL:
+                return await self.async_step_local(self._discovered_source)
+
+            self._discovered_local_source = self._discovered_source
+            self._discovery_merge_local = action == _DISCOVERY_ACTION_MERGE
+            return await self.async_step_cloud()
+        return self.async_show_form(
+            step_id="discovered_local",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("discovery_action"): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                _DISCOVERY_ACTION_MERGE,
+                                _DISCOVERY_ACTION_LOCAL,
+                                _DISCOVERY_ACTION_CLOUD,
+                            ],
+                            translation_key="discovery_action",
+                        )
+                    )
+                }
+            ),
+            description_placeholders={
+                "host": str(self._discovered_source[CONF_HOST])
+            },
+        )
 
     async def async_step_discovery_error(
         self, user_input: dict[str, Any] | None = None

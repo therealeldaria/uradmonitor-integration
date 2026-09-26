@@ -3,7 +3,11 @@
 from dataclasses import dataclass
 from typing import Final
 
-from .api.local_templates import A3_2016_TEMPLATE, LocalStatusTemplate
+from .api.local_templates import (
+    A3_2016_TEMPLATE,
+    A3_2026_TEMPLATE,
+    LocalStatusTemplate,
+)
 
 
 @dataclass(frozen=True)
@@ -22,6 +26,11 @@ SUPPORTED_DEVICES: Final[tuple[SupportedDevice, ...]] = (
         name="A3",
         api_types=("8",),
         metadata_template=A3_2016_TEMPLATE,
+    ),
+    SupportedDevice(
+        name="A3",
+        api_types=("82",),
+        metadata_template=A3_2026_TEMPLATE,
     ),
 )
 

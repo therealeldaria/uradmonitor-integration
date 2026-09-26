@@ -18,13 +18,23 @@
         "data_description": {"port": "Det lokala API:et använder normalt port 80."}
       },
       "cloud": {"title": "Anslut uradmonitor-molnet", "data": {"cloud_user_id": "Användar-ID", "cloud_user_key": "Användarnyckel"}},
-      "cloud_device": {"title": "Välj uradmonitor-enhet", "data": {"device_id": "Enhet"}}
-      ,"discovery_error": {"title": "Upptäckt uradmonitor-enhet", "description": "Home Assistant upptäckte en uradmonitor-enhet på {host}.", "data": {}}
+      "discovery_error": {"title": "Upptäckt uradmonitor-enhet", "description": "Home Assistant upptäckte en uradmonitor-enhet på {host}.", "data": {}},
+      "discovered_local": {"title": "Konfigurera upptäckt uradmonitor-enhet", "description": "Home Assistant hittade en uradmonitor-enhet på {host}. Välj om den ska läggas till lokalt, via molnet eller med båda anslutningarna. Om du väljer molnet kan du senare lägga till lokal anslutning manuellt på {host}.", "data": {"discovery_action": "Konfiguration"}},
+      "cloud_device": {"title": "Välj uradmonitor-enhet", "description": "Välj enheten som ska läggas till i Home Assistant.", "data": {"device_id": "Enhet"}, "error": {"cloud_device_mismatch": "Det valda cloud-device-ID:t matchar inte den upptäckta lokala enheten."}}
     },
     "error": {
       "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",
       "invalid_response": "Den lokala enheten returnerade inget giltigt enhets-ID.",
       "unsupported_device": "Den här enhetstypen stöds inte ännu. Lägg gärna upp svaren från http://{host}/j och http://{host}/ i [GitHub-ärendehanteringen](https://github.com/therealeldaria/uradmonitor-integration/issues). Ta bort publika IP-adresser eller annan känslig information vid behov. Du kan också lägga till enheten via molnanslutningen."
+    }
+  },
+  "selector": {
+    "discovery_action": {
+      "options": {
+        "merge": "Slå ihop",
+        "local_only": "Endast lokalt",
+        "cloud_only": "Endast moln"
+      }
     }
   },
   "options": {

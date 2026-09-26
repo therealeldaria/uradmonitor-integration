@@ -13,8 +13,10 @@ from homeassistant.helpers.selector import (
 )
 
 from ..api.client import UradmonitorApiClient, UradmonitorApiError
+from ..api.local_templates import local_json_metadata
 from ..const import (
     ACCESS_MODE_CLOUD,
+    ACCESS_MODE_LOCAL,
     CONF_CLOUD_USER_ID,
     CONF_CLOUD_USER_KEY,
     CONF_DETECTOR,
@@ -77,6 +79,26 @@ class CloudConfigFlowMixin:
                 device for device in self._cloud_devices
                 if str(device.get("id")) == device_id
             )
+            if getattr(self, "_discovery_merge_local", False) and str(
+                device_id
+            ) != self._discovered_device_id:
+                return self.async_show_form(
+                    step_id="cloud_device",
+                    data_schema=vol.Schema(
+                        {
+                            vol.Required(CONF_DEVICE_ID): SelectSelector(
+                                SelectSelectorConfig(
+                                    options=[
+                                        str(cloud_device["id"])
+                                        for cloud_device in self._cloud_devices
+                                        if cloud_device.get("id")
+                                    ]
+                                )
+                            )
+                        }
+                    ),
+                    errors={"base": "cloud_device_mismatch"},
+                )
             assert self._cloud_client is not None
             await self.async_set_unique_id(str(device_id))
             source = {
@@ -84,16 +106,24 @@ class CloudConfigFlowMixin:
                 CONF_CLOUD_USER_KEY: self._cloud_client.user_key,
             }
             metadata = self._cloud_metadata(device)
+            if getattr(self, "_discovery_merge_local", False):
+                metadata = {
+                    **local_json_metadata(self._discovered_local_data),
+                    **metadata,
+                }
             existing = configured_entry(self, str(device_id))
             if existing is not None:
                 return add_source_to_existing(
                     self, existing, ACCESS_MODE_CLOUD, source, metadata
                 )
+            sources = {ACCESS_MODE_CLOUD: source}
+            if getattr(self, "_discovery_merge_local", False):
+                sources[ACCESS_MODE_LOCAL] = self._discovered_local_source
             return self.async_create_entry(
                 title=self._device_name(str(device_id)),
                 data={
                     CONF_DEVICE_ID: device_id,
-                    CONF_SOURCES: {ACCESS_MODE_CLOUD: source},
+                    CONF_SOURCES: sources,
                     **metadata,
                 },
             )
