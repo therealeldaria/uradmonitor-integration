@@ -4,7 +4,7 @@ This document is the source-of-truth log for uradmonitor API discovery.
 
 ## Current status
 
-The official documentation confirms a local embedded webserver with JSON data and a cloud REST API. Implementation details still need validation against real responses and devices.
+The official documentation confirms a local embedded webserver with JSON data and a cloud REST API. Sanitized observations currently cover A3 type `8` (`A3_2016`) and type `82` (`A3_2026`); additional models and response variants still need validation.
 
 ## Confirmed documentation
 
@@ -19,6 +19,7 @@ The official documentation confirms a local embedded webserver with JSON data an
 - API usage is subject to the published uRADMonitor terms and rate limits.
 - The authenticated `/devices` response contains the devices available to the account; a device ID without account access returns an access-denied response in testing.
 - Anonymous public-device subscriptions are not currently supported by this integration. The documented REST calls require authentication.
+- Local devices advertise an HTTP service over Zeroconf (`_http._tcp.local.`). Discovery offers a user-controlled setup flow; it does not automatically add a device.
 
 ## Research rules
 
@@ -70,4 +71,4 @@ User ID or User key in the file.
 - Which models and measurements are supported by the cloud API?
 - How are devices and measurements identified?
 - Which exact response fields and values are returned by each supported model?
-- Is local discovery available, and through which protocol?
+- Do any supported or future devices advertise additional discovery services or protocols?

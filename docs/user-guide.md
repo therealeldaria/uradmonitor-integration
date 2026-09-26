@@ -51,7 +51,7 @@ Enter:
 - The device IP address or hostname.
 - The optional local API port. The documented default is `80`.
 
-The integration reads runtime data from the device's `/j` JSON endpoint. The HTML status page is read once during setup for optional hardware metadata. No API key or cloud credentials are required for local access.
+The device type reported by `/j` determines whether the local model is supported. Runtime readings always come from `/j`; a device-specific template reads static hardware/software metadata from the HTML status page during setup and integration startup. That metadata is not exposed as polled sensor data. No API key or cloud credentials are required for local access.
 
 ## Cloud access
 

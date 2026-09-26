@@ -2,7 +2,7 @@
 
 ## Project
 
-`uradmonitor` is an early-development Home Assistant custom integration for uradmonitor environmental monitoring devices. It is intended for HACS distribution, with GitLab as the canonical development and issue-tracking project and a future public GitHub mirror for HACS.
+`uradmonitor` is a beta Home Assistant custom integration for uRADMonitor environmental monitoring devices. It is intended for HACS distribution, with GitLab as the canonical development project and GitHub as the public release mirror and community issue tracker.
 
 This is an unofficial community project and must not be described as affiliated with, sponsored by, or endorsed by uRADMonitor or its manufacturer.
 
@@ -26,7 +26,8 @@ The implementation language is Python. Follow current Home Assistant APIs and as
 - `custom_components/uradmonitor/`: runtime integration code.
 - `custom_components/uradmonitor/api/`: local/cloud transports and normalized models.
 - `tests/`: Home Assistant fixture tests and pure client tests.
-- `tests/fixtures/`: sanitized, non-secret API responses.
+- `tests/fixtures/`: sanitized, non-secret test responses.
+- `api-captures/`: sanitized local and cloud API examples organized by device/template name.
 - `docs/`: API research, architecture, and HACS notes.
 - `.gitlab-ci.yml`: merge-request and `main` quality gates.
 - `compose.dev.yml` and `.dev/homeassistant/`: isolated manual Home Assistant test instance.
@@ -60,7 +61,7 @@ Manual Home Assistant testing uses the Podman instance described in `docs/develo
 
 ## Release and hosting
 
-GitLab is the source of truth. Releases use calendar versioning and identify experimental/alpha status in the release title and changelog. An approved GitLab release triggers protected CI automation that mirrors the tag and publishes a GitHub release for future HACS consumption. GitLab remains the issue tracker.
+GitLab is the source of truth for development and releases. Releases use calendar versioning and identify experimental status in the release title and changelog. An approved GitLab release triggers protected CI automation that mirrors the tag and publishes a GitHub release for HACS. GitHub is the community-facing issue tracker; code contributions and merge requests belong on GitLab.
 
 Do not assume the GitLab repository itself is installable through HACS. HACS distribution requires a public GitHub repository.
 

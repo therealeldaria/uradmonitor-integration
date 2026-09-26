@@ -2,6 +2,15 @@
 
 All notable changes will be documented here.
 
+## 2026.09.1 - Beta
+
+- Add local A3 type `82` support using the `A3_2026` metadata template.
+- Identify local devices from the JSON `/j` type and keep sensor polling on JSON; HTML scraping is limited to static metadata.
+- Add confirmed Zeroconf discovery, retry failed availability checks, and avoid automatically adding discovered devices.
+- Offer discovered-device setup as Merge, Local Only, or Cloud Only.
+- Archive sanitized local and cloud API examples for A3_2016 and A3_2026.
+- Move the project status from Alpha to Beta; model coverage remains experimental.
+
 ## 2026.08.4 - Alpha
 
 - Keep local and cloud readings as separate Home Assistant devices and entities.

@@ -1,6 +1,6 @@
 # uradmonitor Home Assistant Integration
 
-> Early development: experimental and not production-ready.
+> Beta: experimental; supported-device coverage and real-world validation are still growing.
 
 This project is a Python Home Assistant custom integration for uRADMonitor environmental monitoring devices. It presents supported measurements as Home Assistant sensor entities for dashboards, automations, and history.
 
@@ -15,8 +15,10 @@ This is an unofficial community integration. It is not affiliated with, sponsore
 - Normalized sensor values and Home Assistant metadata, including local/cloud unit conversion.
 - Retry and availability handling when a device or service is temporarily unavailable.
 - Shared cloud polling for devices using the same account.
+- Zeroconf discovery for local HTTP services, with explicit user confirmation before setup.
+- Local support for A3 device types `8` (`A3_2016`) and `82` (`A3_2026`), identified from `/j`.
 
-The local API uses the device's embedded web server. Metadata is read from the HTML status page once during configuration; runtime readings are read from `/j`. The cloud API uses the User ID and User key from the UradMonitor Dashboard and lists devices available to that account. If both sources are configured for the same physical device, Home Assistant shows separate `(Local)` and `(Cloud)` devices because the values may use different compensation and aggregation. Anonymous public-device subscriptions are not supported.
+The local API uses the device's embedded web server. The device type in `/j` selects a supported-device definition and its HTML metadata template; the HTML page supplies static metadata only, while runtime readings always come from `/j`. Static metadata is refreshed when the integration starts, not polled as sensor data. Zeroconf discovery only offers a device for setup; it never adds one without user confirmation. The cloud API uses the User ID and User key from the UradMonitor Dashboard and lists devices available to that account. If both sources are configured for the same physical device, Home Assistant shows separate `(Local)` and `(Cloud)` devices because the values may use different compensation and aggregation. Anonymous public-device subscriptions are not supported.
 
 Local access requires network access to the device. Cloud access requires an active internet connection. Home Assistant classifies this integration as local polling because it supports direct communication with local devices.
 
@@ -26,7 +28,7 @@ Setup is UI-only through Home Assistant’s config flow. Each physical device ge
 
 Cloud setup can only add devices returned for the authenticated account. This includes owned devices and any devices for which uRADMonitor grants the account global access. A device ID alone is not sufficient for anonymous access.
 
-The integration has been tested with a uRADMonitor A3 using hardware version `104` and software version `124`.
+The tracked, sanitized API examples cover A3 types `8` and `82`. Broader device-model and sensor coverage still needs validation on additional hardware.
 
 ## Support and issues
 
@@ -59,6 +61,7 @@ For manual testing, start the isolated Podman development instance with `podman 
 custom_components/uradmonitor/  Home Assistant integration
 tests/                           Unit and Home Assistant fixture tests
 docs/                            Research and architecture notes
+api-captures/                    Sanitized local and cloud API examples by device template
 brand/                           Repository brand icon
 icon.svg                         Source vector icon
 icon.png                         Repository icon
@@ -91,7 +94,7 @@ Approved GitLab release tags are mirrored to GitHub by GitLab CI, which also cre
 3. Validate additional hardware versions and API response variants.
 4. Publish stable releases after broader testing.
 
-Calendar-versioned releases will remain explicitly experimental/alpha until the configuration model, entities, and API support are stable.
+Calendar-versioned releases are experimental. The project is now in beta while configuration, discovery, device coverage, and API behavior receive broader testing; a stable release will follow only after that validation.
 
 ## License
 
