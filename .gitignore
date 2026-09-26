@@ -16,7 +16,6 @@ secrets.yaml
 local/
 .dev/homeassistant/*
 !.dev/homeassistant/configuration.yaml
-.dev/api-captures/
 .idea/
 .vscode/
 # PyCharm / JetBrains local project files

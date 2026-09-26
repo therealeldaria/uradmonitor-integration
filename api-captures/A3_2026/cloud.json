@@ -1,0 +1,66 @@
+{
+  "timelocal": [
+    "Timelocal",
+    "s"
+  ],
+  "temperature": [
+    "Temperature",
+    "°C"
+  ],
+  "pressure": [
+    "Pressure",
+    "Pa"
+  ],
+  "humidity": [
+    "Humidity",
+    "% RH"
+  ],
+  "voc": [
+    "VOC",
+    "Ohm"
+  ],
+  "vocaqi": [
+    "VOC AQI",
+    "aqi"
+  ],
+  "noise": [
+    "Noise",
+    "dB"
+  ],
+  "noisemax": [
+    "Noise Max",
+    "dB"
+  ],
+  "co2": [
+    "Carbon Dioxide",
+    "ppm"
+  ],
+  "ch2o": [
+    "Formaldehyde",
+    "ppb"
+  ],
+  "o3": [
+    "Ozone",
+    "ppb"
+  ],
+  "pm1": [
+    "PM1.0",
+    "µg/m³"
+  ],
+  "pm25": [
+    "PM2.5",
+    "µg/m³"
+  ],
+  "pm10": [
+    "PM10",
+    "µg/m³"
+  ],
+  "signal": [
+    "Signal",
+    "dBm"
+  ],
+  "all": [
+    "All",
+    ""
+  ]
+}

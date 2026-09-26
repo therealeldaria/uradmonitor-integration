@@ -28,6 +28,42 @@ The official documentation confirms a local embedded webserver with JSON data an
 - Remove or redact credentials, account identifiers, serial numbers, and network details from committed examples.
 - Add sanitized fixtures before implementing parsers.
 
+## API capture archive
+
+Sanitized captures are tracked under `api-captures/`. Name each device folder
+exactly like its metadata template in
+`custom_components/uradmonitor/api/local_templates.py`, and store the captured
+`/` response as `local.html` and `/j` response as `local.json`:
+
+```text
+api-captures/
+├── A3_2016/
+│   ├── local.html
+│   ├── local.json
+│   └── cloud.json
+├── A3_2026/
+│   ├── local.html
+│   ├── local.json
+│   └── cloud.json
+└── cloud/
+    └── devices.json
+```
+
+The archive contains sanitized examples. Device IDs, coordinates, cities,
+countries, owners, and local IP addresses are replaced with synthetic values;
+the initial A3 captures are observed from local devices: `A3_2016` reports
+type `8`; `A3_2026` reports type `82`.
+
+The integration currently polls `/devices`, which returns an account-wide
+array, then selects the object whose `id` matches the configured device. The
+API also provides a device-specific endpoint at `/devices/<ID>`. Use this
+endpoint for a focused cloud capture and save its JSON response beside that
+device's local captures as `cloud.json`; for example,
+`/devices/82000536` maps to `api-captures/A3_2026/cloud.json`. Keep in mind
+that this endpoint is not the endpoint the integration currently polls, so its
+response may differ from the per-device object in `/devices`. Never include the
+User ID or User key in the file.
+
 ## Open questions
 
 - Which device models expose local JSON APIs?

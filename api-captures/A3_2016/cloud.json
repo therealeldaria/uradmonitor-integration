@@ -1,0 +1,54 @@
+{
+  "timelocal": [
+    "Timelocal",
+    "s"
+  ],
+  "temperature": [
+    "Temperature",
+    "°C"
+  ],
+  "pressure": [
+    "Pressure",
+    "Pa"
+  ],
+  "humidity": [
+    "Humidity",
+    "% RH"
+  ],
+  "voc": [
+    "VOC",
+    "Ohm"
+  ],
+  "vocaqi": [
+    "VOC AQI",
+    "aqi"
+  ],
+  "co2": [
+    "Carbon Dioxide",
+    "ppm"
+  ],
+  "ch2o": [
+    "Formaldehyde",
+    "ppb"
+  ],
+  "pm25": [
+    "PM2.5",
+    "µg/m³"
+  ],
+  "cpm": [
+    "Radiation",
+    "cpm"
+  ],
+  "voltage": [
+    "Voltage",
+    "V"
+  ],
+  "duty": [
+    "Duty cycle",
+    "‰"
+  ],
+  "all": [
+    "All",
+    ""
+  ]
+}
