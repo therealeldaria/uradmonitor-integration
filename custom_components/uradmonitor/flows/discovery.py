@@ -8,7 +8,6 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
-    SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
 )
@@ -121,19 +120,11 @@ class DiscoveryConfigFlowMixin:
                     vol.Required("discovery_action"): SelectSelector(
                         SelectSelectorConfig(
                             options=[
-                                SelectOptionDict(
-                                    value=_DISCOVERY_ACTION_MERGE,
-                                    label="Merge",
-                                ),
-                                SelectOptionDict(
-                                    value=_DISCOVERY_ACTION_LOCAL,
-                                    label="Local Only",
-                                ),
-                                SelectOptionDict(
-                                    value=_DISCOVERY_ACTION_CLOUD,
-                                    label="Cloud Only",
-                                ),
+                                _DISCOVERY_ACTION_MERGE,
+                                _DISCOVERY_ACTION_LOCAL,
+                                _DISCOVERY_ACTION_CLOUD,
                             ],
+                            translation_key="discovery_action",
                         )
                     )
                 }

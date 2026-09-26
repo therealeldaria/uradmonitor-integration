@@ -68,6 +68,15 @@
       "unsupported_device": "This device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed. You can also add this device through cloud access."
     }
   },
+  "selector": {
+    "discovery_action": {
+      "options": {
+        "merge": "Merge",
+        "local_only": "Local Only",
+        "cloud_only": "Cloud Only"
+      }
+    }
+  },
   "options": {
     "step": {
       "init": {
