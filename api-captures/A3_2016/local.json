@@ -1,0 +1,17 @@
+{
+  "data": {
+    "id": "A3F1042C",
+    "type": "8",
+    "detector": "SI29BG",
+    "voltage": 380,
+    "cpm": 36,
+    "temperature": 27.04,
+    "humidity": 47.99,
+    "pressure": 100322,
+    "voc": 2209877,
+    "co2": 572,
+    "ch2o": 0.00,
+    "pm25": 88,
+    "uptime": 202218
+  }
+}

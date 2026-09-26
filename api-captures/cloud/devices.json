@@ -1,0 +1,227 @@
+[
+  {
+    "id": "C1D21009",
+    "timefirst": 1421613359,
+    "timelast": 1565551652,
+    "timelocal": 91,
+    "latitude": 57.8642,
+    "longitude": 12.1357,
+    "altitude": 40,
+    "speed": null,
+    "city": "Sample City 3",
+    "country": "ZZ",
+    "placement": 0,
+    "versionsw": 123,
+    "versionhw": 109,
+    "status": null,
+    "mobile": null,
+    "detector": "SBM20",
+    "factor": 0.006315,
+    "detector2": "SBM20",
+    "factor2": 0.006315,
+    "note": null,
+    "picture": null,
+    "aqi": null,
+    "owner": 9103,
+    "errors": null,
+    "faulty": null,
+    "param_temperature": [
+      "Temperature",
+      "°C"
+    ],
+    "avg_temperature": "23.09",
+    "last_temperature": null,
+    "param_cpm": [
+      "Radiation",
+      "cpm"
+    ],
+    "avg_cpm": 22,
+    "last_cpm": null,
+    "param_voltage": [
+      "Voltage",
+      "V"
+    ],
+    "avg_voltage": "381.50",
+    "last_voltage": null,
+    "param_duty": [
+      "Duty cycle",
+      "‰"
+    ],
+    "avg_duty": "450.75",
+    "last_duty": null
+  },
+  {
+    "id": "A3F1042C",
+    "timefirst": 1481581690,
+    "timelast": 1790413039,
+    "timelocal": 16740,
+    "latitude": 59.1234,
+    "longitude": 18.5678,
+    "altitude": 54.43,
+    "speed": null,
+    "city": "Sample City 1",
+    "country": "ZZ",
+    "placement": 1,
+    "versionsw": 124,
+    "versionhw": 104,
+    "status": 1,
+    "mobile": 0,
+    "detector": "SI29BG",
+    "factor": 0.01,
+    "detector2": "SI29BG",
+    "factor2": 0.01,
+    "note": null,
+    "picture": null,
+    "aqi": 4,
+    "owner": 9101,
+    "errors": null,
+    "faulty": null,
+    "param_temperature": [
+      "Temperature",
+      "°C"
+    ],
+    "avg_temperature": "15.96",
+    "last_temperature": "16.00",
+    "param_pressure": [
+      "Pressure",
+      "Pa"
+    ],
+    "avg_pressure": 100674,
+    "last_pressure": 100673,
+    "param_humidity": [
+      "Humidity",
+      "% RH"
+    ],
+    "avg_humidity": "70.99",
+    "last_humidity": "70.95",
+    "param_voc": [
+      "VOC",
+      "Ohm"
+    ],
+    "avg_voc": 4287281,
+    "last_voc": 4292099,
+    "param_vocaqi": [
+      "VOC AQI",
+      "aqi"
+    ],
+    "avg_vocaqi": 273,
+    "last_vocaqi": 273,
+    "param_co2": [
+      "Carbon Dioxide",
+      "ppm"
+    ],
+    "avg_co2": 475,
+    "last_co2": 477,
+    "param_ch2o": [
+      "Formaldehyde",
+      "ppb"
+    ],
+    "avg_ch2o": 2,
+    "last_ch2o": 0,
+    "param_cpm": [
+      "Radiation",
+      "cpm"
+    ],
+    "avg_cpm": 14,
+    "last_cpm": 13,
+    "param_voltage": [
+      "Voltage",
+      "V"
+    ],
+    "avg_voltage": "380.00",
+    "last_voltage": "380.00",
+    "param_duty": [
+      "Duty cycle",
+      "‰"
+    ],
+    "avg_duty": "202.00",
+    "last_duty": "202.00"
+  },
+  {
+    "id": "A3B62026",
+    "timefirst": 1787492866,
+    "timelast": 1790413029,
+    "timelocal": 2580,
+    "latitude": 58.4321,
+    "longitude": 13.2468,
+    "altitude": null,
+    "speed": null,
+    "city": "Sample City 2",
+    "country": "ZZ",
+    "placement": 0,
+    "versionsw": 96,
+    "versionhw": 110,
+    "status": 1,
+    "mobile": null,
+    "detector": "SI29BG",
+    "factor": 0.01,
+    "detector2": "SI29BG",
+    "factor2": 0.01,
+    "note": null,
+    "picture": null,
+    "aqi": 0,
+    "owner": 9102,
+    "errors": null,
+    "faulty": null,
+    "param_temperature": [
+      "Temperature",
+      "°C"
+    ],
+    "avg_temperature": "18.31",
+    "last_temperature": "18.51",
+    "param_pressure": [
+      "Pressure",
+      "Pa"
+    ],
+    "avg_pressure": 100051,
+    "last_pressure": 100045,
+    "param_humidity": [
+      "Humidity",
+      "% RH"
+    ],
+    "avg_humidity": "65.29",
+    "last_humidity": "65.00",
+    "param_voc": [
+      "VOC",
+      "Ohm"
+    ],
+    "avg_voc": 258219,
+    "last_voc": 257288,
+    "param_vocaqi": [
+      "VOC AQI",
+      "aqi"
+    ],
+    "avg_vocaqi": 58,
+    "last_vocaqi": 59,
+    "param_noise": [
+      "Noise",
+      "dB"
+    ],
+    "avg_noise": "37.16",
+    "last_noise": "38.00",
+    "param_co2": [
+      "Carbon Dioxide",
+      "ppm"
+    ],
+    "avg_co2": 503,
+    "last_co2": 497,
+    "param_ch2o": [
+      "Formaldehyde",
+      "ppb"
+    ],
+    "avg_ch2o": 11,
+    "last_ch2o": 9,
+    "param_o3": [
+      "Ozone",
+      "ppb"
+    ],
+    "avg_o3": 20,
+    "last_o3": 20,
+    "param_signal": [
+      "Signal",
+      "dBm"
+    ],
+    "avg_signal": -78,
+    "last_signal": -78
+  }
+]
