@@ -50,6 +50,11 @@
         "title": "UradMonitor discovery",
         "description": "Home Assistant discovered an UradMonitor at {host}.",
         "data": {}
+      },
+      "discovered_local": {
+        "title": "Add discovered UradMonitor",
+        "description": "Home Assistant found an UradMonitor at {host}. Submit this form to add it, or cancel to leave it unconfigured.",
+        "data": {}
       }
     },
     "error": {

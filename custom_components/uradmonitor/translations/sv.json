@@ -20,6 +20,7 @@
       "cloud": {"title": "Anslut uradmonitor-molnet", "data": {"cloud_user_id": "Användar-ID", "cloud_user_key": "Användarnyckel"}},
       "cloud_device": {"title": "Välj uradmonitor-enhet", "data": {"device_id": "Enhet"}}
       ,"discovery_error": {"title": "Upptäckt uradmonitor-enhet", "description": "Home Assistant upptäckte en uradmonitor-enhet på {host}.", "data": {}}
+      ,"discovered_local": {"title": "Lägg till upptäckt uradmonitor-enhet", "description": "Home Assistant hittade en uradmonitor-enhet på {host}. Skicka formuläret för att lägga till den, eller avbryt för att lämna den okonfigurerad.", "data": {}}
     },
     "error": {
       "cannot_connect": "Det gick inte att ansluta till den lokala enheten. Kontrollera adress och port.",

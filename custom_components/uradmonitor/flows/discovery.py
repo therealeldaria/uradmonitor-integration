@@ -6,10 +6,12 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
+from ..api.client import UradmonitorApiClient, UradmonitorApiError
 from ..const import CONF_HOST, CONF_PORT
+from .common import configured_entry
 
 _SERVICE_SUFFIX = "._http._tcp.local."
 _SERVICE_PREFIX = "uradmonitor-"
@@ -57,27 +59,52 @@ class DiscoveryConfigFlowMixin:
             return self.async_abort(reason="not_uradmonitor")
         source = discovered_local_source(discovery_info)
         await self.async_set_unique_id(discovered_local_unique_id(discovery_info))
-        result: config_entries.FlowResult
+        local_data: dict[str, Any] | None = None
         for attempt in range(_DISCOVERY_RETRIES):
-            result = await self.async_step_local(source)
-            if (
-                result.get("type") != FlowResultType.FORM
-                or result.get("errors", {}).get("base") != "cannot_connect"
-                or attempt == _DISCOVERY_RETRIES - 1
-            ):
-                break
-            _LOGGER.debug(
-                "Discovered UradMonitor at %s is not ready; retrying (%s/%s)",
-                source[CONF_HOST],
-                attempt + 2,
-                _DISCOVERY_RETRIES,
-            )
-            await asyncio.sleep(_DISCOVERY_RETRY_DELAY)
-        if result.get("type") == FlowResultType.FORM and result.get("errors"):
-            self._discovery_error = result["errors"].get("base", "cannot_connect")
+            try:
+                client = UradmonitorApiClient(async_get_clientsession(self.hass))
+                local_data = await client.async_get_local_data(
+                    source[CONF_HOST], source[CONF_PORT]
+                )
+            except UradmonitorApiError:
+                if attempt == _DISCOVERY_RETRIES - 1:
+                    self._discovery_error = "cannot_connect"
+                    self._discovery_host = str(source[CONF_HOST])
+                    return await self.async_step_discovery_error()
+                _LOGGER.debug(
+                    "Discovered UradMonitor at %s is not ready; retrying (%s/%s)",
+                    source[CONF_HOST],
+                    attempt + 2,
+                    _DISCOVERY_RETRIES,
+                )
+                await asyncio.sleep(_DISCOVERY_RETRY_DELAY)
+                continue
+            break
+
+        device_id = self._local_device_id(local_data or {})
+        if not device_id:
+            self._discovery_error = "invalid_response"
             self._discovery_host = str(source[CONF_HOST])
             return await self.async_step_discovery_error()
-        return result
+        if configured_entry(self, device_id) is not None:
+            return self.async_abort(reason="already_configured")
+
+        self._discovered_source = source
+        return await self.async_step_discovered_local()
+
+    async def async_step_discovered_local(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.FlowResult:
+        """Ask for confirmation before adding a discovered local device."""
+        if user_input is not None:
+            return await self.async_step_local(self._discovered_source)
+        return self.async_show_form(
+            step_id="discovered_local",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "host": str(self._discovered_source[CONF_HOST])
+            },
+        )
 
     async def async_step_discovery_error(
         self, user_input: dict[str, Any] | None = None
