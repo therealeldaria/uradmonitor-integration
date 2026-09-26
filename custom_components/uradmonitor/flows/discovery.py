@@ -7,6 +7,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from ..api.client import UradmonitorApiClient, UradmonitorApiError
@@ -15,6 +16,9 @@ from .common import configured_entry
 
 _SERVICE_SUFFIX = "._http._tcp.local."
 _SERVICE_PREFIX = "uradmonitor-"
+_DISCOVERY_ACTION_MERGE = "merge"
+_DISCOVERY_ACTION_LOCAL = "local_only"
+_DISCOVERY_ACTION_CLOUD = "cloud_only"
 _DISCOVERY_RETRIES = 6
 _DISCOVERY_RETRY_DELAY = 30
 
@@ -90,17 +94,38 @@ class DiscoveryConfigFlowMixin:
             return self.async_abort(reason="already_configured")
 
         self._discovered_source = source
+        self._discovered_device_id = device_id
+        self._discovered_local_data = local_data
         return await self.async_step_discovered_local()
 
     async def async_step_discovered_local(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.FlowResult:
-        """Ask for confirmation before adding a discovered local device."""
+        """Choose how to configure a discovered local device."""
         if user_input is not None:
-            return await self.async_step_local(self._discovered_source)
+            action = user_input["discovery_action"]
+            if action == _DISCOVERY_ACTION_LOCAL:
+                return await self.async_step_local(self._discovered_source)
+
+            self._discovered_local_source = self._discovered_source
+            self._discovery_merge_local = action == _DISCOVERY_ACTION_MERGE
+            return await self.async_step_cloud()
         return self.async_show_form(
             step_id="discovered_local",
-            data_schema=vol.Schema({}),
+            data_schema=vol.Schema(
+                {
+                    vol.Required("discovery_action"): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                _DISCOVERY_ACTION_MERGE,
+                                _DISCOVERY_ACTION_LOCAL,
+                                _DISCOVERY_ACTION_CLOUD,
+                            ],
+                            translation_key="discovery_action",
+                        )
+                    )
+                }
+            ),
             description_placeholders={
                 "host": str(self._discovered_source[CONF_HOST])
             },

@@ -44,6 +44,9 @@
         "description": "Select the device you want to add to Home Assistant. If it is already configured locally, cloud data will be added to the same Home Assistant device. Repeat setup to add another device.",
         "data": {
           "device_id": "Device"
+        },
+        "error": {
+          "cloud_device_mismatch": "The selected cloud device does not match the discovered local device."
         }
       },
       "discovery_error": {
@@ -52,15 +55,26 @@
         "data": {}
       },
       "discovered_local": {
-        "title": "Add discovered UradMonitor",
-        "description": "Home Assistant found an UradMonitor at {host}. Submit this form to add it, or cancel to leave it unconfigured.",
-        "data": {}
+        "title": "Configure discovered UradMonitor",
+        "description": "Home Assistant found an UradMonitor at {host}. Choose whether to add it locally, add cloud access, or configure both. If you switch to cloud, you can add local access manually later at {host}.",
+        "data": {
+          "discovery_action": "Configuration"
+        }
       }
     },
     "error": {
       "cannot_connect": "Unable to connect to the local device. Check the host and port.",
       "invalid_response": "The local device did not return a valid device ID.",
       "unsupported_device": "This device type is not supported yet. Please submit the responses from http://{host}/j and http://{host}/ to the [GitHub issue tracker](https://github.com/therealeldaria/uradmonitor-integration/issues). Redact public IP addresses or other sensitive information if needed. You can also add this device through cloud access."
+    },
+    "selector": {
+      "discovery_action": {
+        "options": {
+          "merge": "Merge local and cloud",
+          "local_only": "No cloud, local only",
+          "cloud_only": "Switch to cloud"
+        }
+      }
     }
   },
   "options": {
