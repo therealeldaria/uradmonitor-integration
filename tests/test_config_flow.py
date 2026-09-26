@@ -117,13 +117,12 @@ def test_zeroconf_ignores_other_http_services():
     """Other HTTP services must not start the UradMonitor flow."""
     from types import SimpleNamespace
 
-    assert not is_uradmonitor_service(
-        SimpleNamespace(name="printer._http._tcp.local.")
-    )
+    assert not is_uradmonitor_service(SimpleNamespace(name="printer._http._tcp.local."))
 
 
 def test_local_form_preserves_discovered_host_and_port():
     """Discovery values remain filled in when local validation fails."""
+
     class Flow(LocalConfigFlowMixin):
         def async_show_form(self, **kwargs):
             return kwargs

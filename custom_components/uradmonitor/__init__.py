@@ -153,14 +153,10 @@ async def _async_refresh_local_metadata(
         _LOGGER.debug("Unable to refresh optional local metadata: %s", err)
         return
     changed = {
-        key: value
-        for key, value in metadata.items()
-        if entry.data.get(key) != value
+        key: value for key, value in metadata.items() if entry.data.get(key) != value
     }
     if changed:
-        hass.config_entries.async_update_entry(
-            entry, data={**entry.data, **changed}
-        )
+        hass.config_entries.async_update_entry(entry, data={**entry.data, **changed})
 
 
 def _source_identifier(device_id: str, source: str) -> str:

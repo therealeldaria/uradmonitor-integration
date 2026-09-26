@@ -99,9 +99,7 @@ class LocalConfigFlowMixin:
         """Show the local connection form."""
         host = user_input.get(CONF_HOST) if user_input else None
         host_field = (
-            vol.Required(CONF_HOST, default=host)
-            if host
-            else vol.Required(CONF_HOST)
+            vol.Required(CONF_HOST, default=host) if host else vol.Required(CONF_HOST)
         )
         return self.async_show_form(
             step_id="local",
@@ -116,9 +114,11 @@ class LocalConfigFlowMixin:
             ),
             errors={"base": error} if error else {},
             description_placeholders={
-                "host": str(user_input.get(CONF_HOST, "<device-host>")
-                if user_input
-                else "<device-host>")
+                "host": str(
+                    user_input.get(CONF_HOST, "<device-host>")
+                    if user_input
+                    else "<device-host>"
+                )
             },
         )
 

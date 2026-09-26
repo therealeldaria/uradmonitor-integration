@@ -129,9 +129,7 @@ class DiscoveryConfigFlowMixin:
                     )
                 }
             ),
-            description_placeholders={
-                "host": str(self._discovered_source[CONF_HOST])
-            },
+            description_placeholders={"host": str(self._discovered_source[CONF_HOST])},
         )
 
     async def async_step_discovery_error(

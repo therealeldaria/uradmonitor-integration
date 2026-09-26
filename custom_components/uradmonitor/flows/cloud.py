@@ -76,12 +76,14 @@ class CloudConfigFlowMixin:
         if user_input is not None:
             device_id = user_input[CONF_DEVICE_ID]
             device = next(
-                device for device in self._cloud_devices
+                device
+                for device in self._cloud_devices
                 if str(device.get("id")) == device_id
             )
-            if getattr(self, "_discovery_merge_local", False) and str(
-                device_id
-            ) != self._discovered_device_id:
+            if (
+                getattr(self, "_discovery_merge_local", False)
+                and str(device_id) != self._discovered_device_id
+            ):
                 return self.async_show_form(
                     step_id="cloud_device",
                     data_schema=vol.Schema(

@@ -39,9 +39,7 @@ def _parse_a3_2016_metadata(page: str) -> Metadata:
     }
 
 
-A3_2016_TEMPLATE = LocalStatusTemplate(
-    "a3_2016_metadata", _parse_a3_2016_metadata
-)
+A3_2016_TEMPLATE = LocalStatusTemplate("a3_2016_metadata", _parse_a3_2016_metadata)
 
 
 def _parse_a3_2026_metadata(page: str) -> Metadata:
@@ -66,9 +64,7 @@ def _parse_a3_2026_metadata(page: str) -> Metadata:
     }
 
 
-A3_2026_TEMPLATE = LocalStatusTemplate(
-    "a3_2026_metadata", _parse_a3_2026_metadata
-)
+A3_2026_TEMPLATE = LocalStatusTemplate("a3_2026_metadata", _parse_a3_2026_metadata)
 
 
 def local_json_metadata(data: Mapping[str, Any]) -> Metadata:
