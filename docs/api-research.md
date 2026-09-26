@@ -51,9 +51,8 @@ api-captures/
 
 The archive contains sanitized examples. Device IDs, coordinates, cities,
 countries, owners, and local IP addresses are replaced with synthetic values;
-the source captures remain in the ignored `.dev/api-captures/` directory for
-local reference only. The initial A3 captures are observed from local devices:
-`A3_2016` reports type `8`; `A3_2026` reports type `82`.
+the initial A3 captures are observed from local devices: `A3_2016` reports
+type `8`; `A3_2026` reports type `82`.
 
 The integration currently polls `/devices`, which returns an account-wide
 array, then selects the object whose `id` matches the configured device. The
