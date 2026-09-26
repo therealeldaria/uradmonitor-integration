@@ -40,11 +40,10 @@ directory. Name each device folder exactly like its metadata template in
 ├── A3_2016/
 │   ├── local.html
 │   └── local.json
-├── A3_2026/
-│   ├── local.html
-│   └── local.json
-└── cloud/
-    └── devices.json
+└── A3_2026/
+    ├── local.html
+    ├── local.json
+    └── cloud.json
 ```
 
 The archive is for raw, local research data and is ignored by Git because it
@@ -53,9 +52,13 @@ sanitized, necessary test fixtures under `tests/fixtures/`. The initial A3
 captures are observed from local devices: `A3_2016` reports type `8`; `A3_2026`
 reports type `82`.
 
-The cloud `/devices` response may contain multiple devices and is stored once
-at `.dev/api-captures/cloud/devices.json`. Keep the API response as JSON and
-never include the User ID or User key in the file.
+Cloud polling requests `/devices`, which returns an account-wide array, then
+selects the object whose `id` matches the configured device. For a focused
+capture, make the same `/devices` request and save only that device's object
+beside its local captures as `cloud.json`. For example, the A3_2026 at device
+ID `82000536` is stored at `.dev/api-captures/A3_2026/cloud.json`. This keeps
+the capture representative of polling while excluding unrelated devices.
+Never include the User ID or User key in the file.
 
 ## Open questions
 
