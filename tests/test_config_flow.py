@@ -19,6 +19,7 @@ from custom_components.uradmonitor.flows.cloud import CloudConfigFlowMixin
 from custom_components.uradmonitor.flows.common import entry_sources
 from custom_components.uradmonitor.flows.discovery import (
     discovered_local_source,
+    discovered_local_unique_id,
     is_uradmonitor_service,
 )
 from custom_components.uradmonitor.flows.local import LocalConfigFlowMixin
@@ -109,6 +110,7 @@ def test_zeroconf_identifies_uradmonitor_http_service():
 
     assert is_uradmonitor_service(info)
     assert discovered_local_source(info) == {CONF_HOST: "192.168.30.7", CONF_PORT: 80}
+    assert discovered_local_unique_id(info) == "192.168.30.7:80"
 
 
 def test_zeroconf_ignores_other_http_services():

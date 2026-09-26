@@ -40,6 +40,12 @@ def discovered_local_source(discovery_info: ZeroconfServiceInfo) -> dict[str, An
     }
 
 
+def discovered_local_unique_id(discovery_info: ZeroconfServiceInfo) -> str:
+    """Return a stable temporary ID for an in-progress discovery flow."""
+    source = discovered_local_source(discovery_info)
+    return f"{source[CONF_HOST]}:{source[CONF_PORT]}"
+
+
 class DiscoveryConfigFlowMixin:
     """Provide Zeroconf discovery for local UradMonitor devices."""
 
@@ -50,6 +56,7 @@ class DiscoveryConfigFlowMixin:
         if not is_uradmonitor_service(discovery_info):
             return self.async_abort(reason="not_uradmonitor")
         source = discovered_local_source(discovery_info)
+        await self.async_set_unique_id(discovered_local_unique_id(discovery_info))
         result: config_entries.FlowResult
         for attempt in range(_DISCOVERY_RETRIES):
             result = await self.async_step_local(source)
