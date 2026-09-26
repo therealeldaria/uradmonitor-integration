@@ -52,13 +52,15 @@ sanitized, necessary test fixtures under `tests/fixtures/`. The initial A3
 captures are observed from local devices: `A3_2016` reports type `8`; `A3_2026`
 reports type `82`.
 
-Cloud polling requests `/devices`, which returns an account-wide array, then
-selects the object whose `id` matches the configured device. For a focused
-capture, make the same `/devices` request and save only that device's object
-beside its local captures as `cloud.json`. For example, the A3_2026 at device
-ID `82000536` is stored at `.dev/api-captures/A3_2026/cloud.json`. This keeps
-the capture representative of polling while excluding unrelated devices.
-Never include the User ID or User key in the file.
+The integration currently polls `/devices`, which returns an account-wide
+array, then selects the object whose `id` matches the configured device. The
+API also provides a device-specific endpoint at `/devices/<ID>`. Use this
+endpoint for a focused cloud capture and save its JSON response beside that
+device's local captures as `cloud.json`; for example,
+`/devices/82000536` maps to `.dev/api-captures/A3_2026/cloud.json`. Keep in mind
+that this endpoint is not the endpoint the integration currently polls, so its
+response may differ from the per-device object in `/devices`. Never include the
+User ID or User key in the file.
 
 ## Open questions
 
