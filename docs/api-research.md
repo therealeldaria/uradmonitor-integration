@@ -28,6 +28,35 @@ The official documentation confirms a local embedded webserver with JSON data an
 - Remove or redact credentials, account identifiers, serial numbers, and network details from committed examples.
 - Add sanitized fixtures before implementing parsers.
 
+## Local capture archive
+
+Raw device captures are kept locally under the ignored `.dev/api-captures/`
+directory. Name each device folder exactly like its metadata template in
+`custom_components/uradmonitor/api/local_templates.py`, and store the captured
+`/` response as `local.html` and `/j` response as `local.json`:
+
+```text
+.dev/api-captures/
+├── A3_2016/
+│   ├── local.html
+│   └── local.json
+├── A3_2026/
+│   ├── local.html
+│   └── local.json
+└── cloud/
+    └── devices.json
+```
+
+The archive is for raw, local research data and is ignored by Git because it
+can contain device identifiers, network details, and measurements. Commit only
+sanitized, necessary test fixtures under `tests/fixtures/`. The initial A3
+captures are observed from local devices: `A3_2016` reports type `8`; `A3_2026`
+reports type `82`.
+
+The cloud `/devices` response may contain multiple devices and is stored once
+at `.dev/api-captures/cloud/devices.json`. Keep the API response as JSON and
+never include the User ID or User key in the file.
+
 ## Open questions
 
 - Which device models expose local JSON APIs?
